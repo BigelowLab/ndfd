@@ -4,7 +4,7 @@
 \alias{n2c}
 \title{Convert numeric values to character}
 \usage{
-n2c(x, fmt = "\%0.4f")
+n2c(x, fmt = "\%0.5f")
 }
 \arguments{
 \item{x}{numeric or character value to format}

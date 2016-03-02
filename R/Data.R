@@ -20,12 +20,25 @@ DWMLDataRefClass <- setRefClass("DWMLDataRefClass",
         show = function(prefix = ''){
             callSuper(prefix = prefix)
             if (nrow(.self$location) <= 12){
-                cat(prefix, " locations: ",, "\n", sep = "")
+                cat(prefix, " locations:\n", sep = "")
                 print(.self$location)
             } else {
                 cat(prefix, " locations (head and tail):\n", sep = "")
                 print(head(.self$location))
                 print(tail(.self$location))   
+            }
+            tl <- .self$extract_time_layout()
+            if(length(tl) > 0){
+                cat(prefix, " timelayout(s): ", paste(names(tl), collapse = " "), "\n", sep = "")
+            }  # has timelayout
+            pp <- .self$extract_parameters()
+            if (length(pp) > 0){
+                cat(prefix, " parameter(s):\n", sep = "")
+                for (n in names(pp)){
+                    cat(prefix, " ", n, "\n", sep = "")
+                    ss <- parameter_to_string(pp[[n]])
+                    for (s in ss) cat(prefix, "   ", s, "\n", sep = "")
+                }
             }
         })
 )
@@ -97,7 +110,12 @@ DWMLDataRefClass$methods(
         xx <- lapply(tl,
             function(x, as_posixct = TRUE){
                 starts <- sapply(x[names(x) %in% 'start-valid-time'], function(x) xml_value(x))
-                ends <- sapply(x[names(x) %in% 'end-valid-time'], function(x) xml_value(x))
+                iend <- names(x) %in% 'end-valid-time'
+                if (any(iend)){
+                    ends <- sapply(x[iend], function(x) xml_value(x))
+                } else {
+                    ends <- rep(NA, length(starts))
+                }   
                 if (as_posixct){
                     starts <- as.POSIXct(starts, format = "%Y-%m-%dT%H:%M:%S", tz = "UTC")
                     ends <- as.POSIXct(ends, format = "%Y-%m-%dT%H:%M:%S", tz = "UTC")
@@ -155,9 +173,13 @@ DWMLDataRefClass$methods(
                 xx
             })
         names(pp) <- applicable_location
-    
+        pp
     })            
         
+
+###########  methods above
+###########  functions below
+
 
 #' Extract one parameter from an XML::xmlNode
 #' 
@@ -174,3 +196,17 @@ extract_one_parameter <- function(x){
         as.numeric(sapply(x[names(x) %in% 'value'], xml_value)) )
     a
 }
+
+
+#' Cast a parameter to character (suitable for DWMLDataRefClass$show)
+#'
+#' @param x a list of one or more parameter lists
+#' @return character representation of the parameters
+parameter_to_string<- function(x){
+     sapply(x, 
+        function(x){
+            sprintf("%s, type = %s, units = %s, time_layout = %s", 
+            x[['name']], x[['type']], x[['units']], x[['time_layout']])
+        })
+}
+    

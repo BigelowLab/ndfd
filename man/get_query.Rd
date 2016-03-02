@@ -6,7 +6,7 @@
 \usage{
 get_query(query,
   baseuri = "http://graphical.weather.gov/xml/sample_products/browser_interface",
-  interface = c("ndfdXMLclient.php", "ndfdBrowserClientByDay")[1])
+  interface = c("ndfdXMLclient.php", "ndfdBrowserClientByDay")[1], ...)
 }
 \arguments{
 \item{query}{character string}
@@ -14,6 +14,8 @@ get_query(query,
 \item{baseuri}{character the base URI}
 
 \item{interface}{the interface to use with the baseuri}
+
+\item{...}{other arguments for \code{parse_response}}
 }
 \value{
 object inheriting DWMLBaseRefClass

@@ -4,7 +4,7 @@
 #' @param x numeric or character value to format
 #' @param fmt character format
 #' @return character representation of input
-n2c <- function(x, fmt = '%0.4f'){
+n2c <- function(x, fmt = '%0.5f'){
    if (is.numeric(x)){
       x <- sprintf(fmt, x)
    }
@@ -76,3 +76,4 @@ xml_value  <- function(x){
 xml_atts  <- function(x){
     XML::xmlAttrs(x)
 }
+

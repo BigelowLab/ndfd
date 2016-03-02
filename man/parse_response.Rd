@@ -5,10 +5,12 @@
 \title{Parse an \code{httr::response} class object to DWMLBaseRefClass object including
  an DWMLExceptionRefClass}
 \usage{
-parse_response(r, ...)
+parse_response(r, form = c("DWMLTopRefClass", "xml")[1], ...)
 }
 \arguments{
 \item{r}{\code{httr::response} class object}
+
+\item{form}{character specifies the type of data to return}
 
 \item{...}{further arguments for \code{check_response()}}
 }

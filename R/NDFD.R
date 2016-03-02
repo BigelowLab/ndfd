@@ -11,17 +11,22 @@ NDFDRefClass <- setRefClass("NDFDRefClass",
     methods = list(
         
         initialize = function(x){
-            if (is.character(x)){          
+            if (is.character(x)){
+                .self$uri <- x[1]          
                 r <- httr::GET(x[1])
-                .self$node <- parse_response(r)
+                .self$node <- check_response(r)
+                .self$init()
             }
         },
         
+        browse = function(){
+            if (interactive() && (nchar(.self$uri) > 0)) httr::BROWSE(.self$uri)
+        },
+        
         show = function(prefix = ""){
+            #cat(prefix, "URI:", .self$uri, "\n", sep = "")
             callSuper(prefix = prefix)
-            cat(prefix, " URI:", .self$uri, "\n")
-        }
-        )
+        })
 )           
         
 #' Instantiate a NDFREfClass object

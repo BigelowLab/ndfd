@@ -15,22 +15,29 @@ DWMLTopRefClass <- setRefClass("DWMLTopRefClass",
     fields = list(
        version = 'character',
        head = 'ANY',
-       data = 'ANY'),
+       data = 'ANY', 
+       latLonList = 'ANY'),
    
     methods = list(
        init = function(){
          atts <- xml_atts(.self$node)
          if ("version" %in% names(atts)) .self$version <- atts[['version']]
+         .self$field('head', NULL)
+         .self$field('data', NULL)
+         .self$field('latLonList', NULL)
          child_names <- names(.self$node)
-         if ('head' %in% child_names) 
+         if ('head' %in% child_names)
              .self$field("head", DWMLHeadRefClass$new(.self$node[['head']]))
          if ('data' %in% child_names) 
              .self$field("data", DWMLDataRefClass$new(.self$node[['data']]))
+         if ('latLonList' %in% child_names)
+             .self$field('latLonList', DWMLLatLonListRefClass$new(.self$node[['latLonList']]))
         },
         show = function(prefix = ""){
             callSuper(prefix = prefix)
-            .self$head$show(prefix = "  ")
-            .self$data$show(prefix = "  ")
+            if (!is.null(.self$head)) .self$head$show(prefix = "  ")
+            if (!is.null(.self$data)) .self$data$show(prefix = "  ")
+            if (!is.null(.self$latLonList)) .self$latLonList$show(prefix = "  ")
         })
 )
 

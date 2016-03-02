@@ -1,12 +1,12 @@
 #' Check an \code{httr::response} class object and possible pare to \code{XML::xmlNode}
 #'
 #' @export
-#' @param x \code{httr::response} class object
+#' @param rsp \code{httr::response} class object
 #' @param encoding character, by defalt 'UTF-8'
 #' @return \code{XML::xmlNode} object
-check_response <- function(x, encoding = "UTF-8"){
+check_response <- function(rsp, encoding = "UTF-8"){
     w <- httr::http_error(rsp)
-    if (!w) {
+    if (w) {
         print(rsp)
         print(httr::content(rsp, as = "text", encoding = encoding)) 
     }
@@ -37,23 +37,24 @@ check_response <- function(x, encoding = "UTF-8"){
 #'
 #' @export
 #' @param r \code{httr::response} class object
+#' @param form character specifies the type of data to return
 #' @param ... further arguments for \code{check_response()}
 #' @return object inheriting DWMLBaseRefClass
-parse_response <- function(r, ...){
+parse_response <- function(r, form = c('DWMLTopRefClass', 'xml')[1], ...){
     
     x <- check_response(r, ...)
     
     if (XML::xmlName(x) == "error"){
     
-        R <- DWMLExceptionRefClass$new(x)
+        if (tolower(form[1]) == 'dwmltoprefclass') x <- DWMLExceptionRefClass$new(x)
         
     } else {
         
-        R <- DWMLRefClass$new(x)
+        if (tolower(form[1]) == 'dwmltoprefclass') x <- DWMLTopRefClass$new(x)
     
     }
     
-    invisible(R)
+    invisible(x)
 }
     
 #' Retrieve a response for a given query
@@ -63,10 +64,12 @@ parse_response <- function(r, ...){
 #' @param query character string 
 #' @param baseuri character the base URI
 #' @param interface the interface to use with the baseuri
+#' @param ... other arguments for \code{parse_response}
 #' @return object inheriting DWMLBaseRefClass
 get_query <- function(query,
     baseuri = "http://graphical.weather.gov/xml/sample_products/browser_interface",
-    interface = c('ndfdXMLclient.php', 'ndfdBrowserClientByDay')[1]){
+    interface = c('ndfdXMLclient.php', 'ndfdBrowserClientByDay')[1], 
+    ...){
     
  
     uri <- file.path(baseuri, interface)
@@ -75,7 +78,7 @@ get_query <- function(query,
     }
     
     r <- httr::GET(uri)
-    return(parse_response(r))
+    return(parse_response(r, ...))
 
 }
 
@@ -181,7 +184,7 @@ get_ndfdXMLclient_groups <- function(){
             "lon", 
             ndfdXMLclient_basic),
         query_multipoint = c(
-            "listlatlon",
+            "listLatLon",
             ndfdXMLclient_basic),
         query_subgrid = c(
             "lat1",

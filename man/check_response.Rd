@@ -4,10 +4,10 @@
 \alias{check_response}
 \title{Check an \code{httr::response} class object and possible pare to \code{XML::xmlNode}}
 \usage{
-check_response(x, encoding = "UTF-8")
+check_response(rsp, encoding = "UTF-8")
 }
 \arguments{
-\item{x}{\code{httr::response} class object}
+\item{rsp}{\code{httr::response} class object}
 
 \item{encoding}{character, by defalt 'UTF-8'}
 }

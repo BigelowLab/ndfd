@@ -6,7 +6,7 @@
 DWMLBaseRefClass <- setRefClass("DWMLBaseRefClass",
     fields = list(node = 'ANY'),
     methods = list(
-        initialize = function(x = NULL){
+        initialize = function(x){
             if (!missing(x)){
                 if (is_xmlNode(x)){
                     .self$field("node", x)
