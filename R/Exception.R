@@ -3,7 +3,7 @@
 
 #' A DWML exception class
 #' 
-#' @include DWMLBase.R
+#' @include Base.R
 #' @export
 DWMLExceptionRefClass <- setRefClass("DWMLExceptionRefClass",
     

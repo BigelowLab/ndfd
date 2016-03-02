@@ -6,7 +6,7 @@
 #' @field version character version string
 #' @field head DWMLHeadRefClass container
 #' @field data DWMLDataRefClass contaier
-#' @include DWMLBase.R
+#' @include Base.R
 #' @export
 DWMLTopRefClass <- setRefClass("DWMLTopRefClass",
 

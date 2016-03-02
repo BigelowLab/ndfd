@@ -2,7 +2,7 @@
 #'
 #' @field location a data frame of location information
 #; @field data a data.frame of element data
-#' @include DWMLBase.R
+#' @include Base.R
 #' @export
 DWMLDataRefClass <- setRefClass("DWMLDataRefClass",
     

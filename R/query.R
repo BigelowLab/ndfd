@@ -1,3 +1,84 @@
+#' Check an \code{httr::response} class object and possible pare to \code{XML::xmlNode}
+#'
+#' @export
+#' @param x \code{httr::response} class object
+#' @param encoding character, by defalt 'UTF-8'
+#' @return \code{XML::xmlNode} object
+check_response <- function(x, encoding = "UTF-8"){
+    w <- httr::http_error(rsp)
+    if (!w) {
+        print(rsp)
+        print(httr::content(rsp, as = "text", encoding = encoding)) 
+    }
+    
+    x <- try(httr::content(rsp, as = "text", encoding = encoding))
+    if (inherits(x, 'try-error')){
+        x  <- create_exception(problem = "error extracting response content")
+        return(invisible(x))
+    }
+    x <- try(XML::xmlTreeParse(x, asText = TRUE, 
+        encoding = encoding, useInternalNodes = TRUE,
+        fullNamespaceInfo = TRUE))
+    if (inherits(x, "try-error")){
+        x <- create_exception(problem = "error with xmlTreeParse")
+        return(invisible(x))
+    }
+    
+    x <- try(XML::xmlRoot(x))
+    if (inherits(x, "try-error")){
+        x <- .create_exception(problem = "error parsing response content with xmlRoot")
+    }
+    
+    invisible(x)
+} # check_response
+
+#' Parse an \code{httr::response} class object to DWMLBaseRefClass object including
+#'  an DWMLExceptionRefClass
+#'
+#' @export
+#' @param r \code{httr::response} class object
+#' @param ... further arguments for \code{check_response()}
+#' @return object inheriting DWMLBaseRefClass
+parse_response <- function(r, ...){
+    
+    x <- check_response(r, ...)
+    
+    if (XML::xmlName(x) == "error"){
+    
+        R <- DWMLExceptionRefClass$new(x)
+        
+    } else {
+        
+        R <- DWMLRefClass$new(x)
+    
+    }
+    
+    invisible(R)
+}
+    
+#' Retrieve a response for a given query
+#' 
+#' @export
+#' @family QUERY
+#' @param query character string 
+#' @param baseuri character the base URI
+#' @param interface the interface to use with the baseuri
+#' @return object inheriting DWMLBaseRefClass
+get_query <- function(query,
+    baseuri = "http://graphical.weather.gov/xml/sample_products/browser_interface",
+    interface = c('ndfdXMLclient.php', 'ndfdBrowserClientByDay')[1]){
+    
+ 
+    uri <- file.path(baseuri, interface)
+    if (!is.null(query)){
+        uri <- paste0(uri, "?", query)
+    }
+    
+    r <- httr::GET(uri)
+    return(parse_response(r))
+
+}
+
 #' Given a named character vector, craft a query
 #'
 #' @export
@@ -10,16 +91,21 @@
 #'    elements <- c("mint", "maxt")
 #'    build_query(s, elements = elements)
 #'    [1] "lat=45.0&lon=-77&Unit=m&mint=mint&maxt=maxt"
+#' }
 build_query <- function(x, elements = NULL){
-   if (!is.character(x)) x <- as.character(x) 
+   if (is.list(x)) x <- unlist(x) 
    r <- paste(paste0(names(x),"=",x), collapse = '&')
    if (!is.null(elements)) r <- paste(r, build_query_element(elements), sep = "&")
    r
 }
 
 #' Given an element list of names from standard list found 
-#' \url{http://graphical.weather.gov/xml/docs/elementInputNames.php}
+#' 
+#' @seealso \url{http://graphical.weather.gov/xml/docs/elementInputNames.php}
+#'
 #' @export
+#' @param a character vector of element names
+#' @return query character string
 build_query_element <- function(x = c('mint', 'max', 'temp')){
    names(x) <- x
    build_query(x)
@@ -30,231 +116,234 @@ build_query_element <- function(x = c('mint', 'max', 'temp')){
 #  ndfdXMLclient.php Interface
 ####
 
-
-#' Single Point Unsummarized Data
-#' Returns DWML-encoded NDFD data for a point
-#' @export
-query_point<- function(
-   lat = 39, 
-   lon = -77,
-   product = 'time-series',
-   begin = '', end = '',
-   Unit = 'm',
-   element = c('mint', 'max', 'temp') ){
-     
-}
-
-#' Multiple Point Unsummarized Data
-#' Returns DWML-encoded NDFD data for a list of points
-#' @export
-query_multipoint <- function(
-   listlatlon = '38.99,-77.02 39.70,-104.80',
-   product = 'time-series',
-   begin = '', end = '',
-   Unit = 'm',
-   element = c('mint', 'max', 'temp') ) {
-}  	 
-
-#' Unsummarized Data for a Subgrid
-#'
-#' Returns DWML-encoded NDFD data for a subgrid defined by a lower left and upper right point
-#'
-#' @export
-query_subgrid<- function(
-   lat1 = 33.8835, 
-   lon1 = -80.0679, 
-   lat2 = 33.8835, 
-   lon2 = -80.0679,
-   resolutionSub = 20.0,
-   product = 'time-series',
-   begin = '', 
-   end = '',
-   Unit = 'm',
-   element = c('mint', 'max', 'temp') ){
-}
-
-#' A List of NDFD Points for a Subgrid
-#'
-# Returns the WGS84 latitude and longitude values of all the NDFD grid points
-#' within a rectangular subgrid as defined by points at the lower left and upper
-#' right corners of the rectangle. The returned list of points is suitable for
-#' use in inputs listLatLon and gmlListLatLon. NOTE: The subgrid locations will
-#' only form a rectangle when viewed in the NDFD projection applicable to the
-#' grid.
-#'
-#' @export
-list_points_in_subgrid <- function(
-   listLat1 = 33.8835,
-   listLon1 = -80.0679,
-   listLat2 = 33.8835,
-   listLon2 = -80.0679,
-   resolutionList = 20.0
-   ){
-}
-   
-#' Unsummarized Data for a Line
-#'
-#' Returns DWML-encoded NDFD data for a line of points defined by the two end 
-#'point
-#'
-#' @export
-query_line <- function(
-   endPoint1Lat = 39.0000,
-   endPoint1Lon = -77.0000,
-   endPoint2Lat = 39.0000,
-   endPoint2Lon = -77.0000,
-   product = "time-series",
-   begin = "2004-04-27T12:00",
-   end = "2004-04-30T12:00",
-   Unit = "m",
-   element = c('mint', 'max', 'temp')){
-}
-
-#' A List of NDFD Points for a Line
-#'
-#' Returns the WGS84 latitude and longitude values for all points on a line
-#' defined by the line's end points. The returned list of points is suitable
-#' for use in inputs listLatLon and gmlListLatLon. NOTE: The list of locations
-#' will only form a straight line when viewed in the NDFD projection applicable
-#' to the grid.
-#'
-#' @export
-list_points_on_line <- function(
-   endPoint1Lat = 39.0000,
-   endPoint1Lon = -77.0000,
-   endPoint2Lat = 39.0000,
-   endPoint2Lon = -77.0000
-   ){
-}
-
-#' Unsummarized Data for One or More Zipcodes
+#' This function is used during development to create and save the data object
+#'  \code{ndfdXMLclient_vars}.
 #' 
-#' Returns DWML-encoded NDFD data for one or more zip codes (50 United States
-#' and Puerto Rico). The returned list of points is suitable for use in inputs
-#' listLatLon and gmlListLatLon.
-#'
-#' @export
-query_zipcodes <- function(
-   zipCodeList = "20910+25414",
-   product = "time-series",
-   begin = "2004-04-27T12:00",
-   end = "2004-04-30T12:00",
-   Unit = "m",
-   element = c('mint', 'max', 'temp')){
+#' @return a named list of default variable values
+get_ndfdXMLclient_vars <- function(){
+    list(
+        lat = 39, 
+        lon = -77,
+        product = 'time-series',
+        begin = '', end = '',
+        Unit = 'm',
+        element = c('mint', 'maxt', 'temp'),
+        listlatlon = '38.99,-77.02 39.70,-104.80', 
+        lat1 = 33.8835, 
+        lon1 = -80.0679, 
+        lat2 = 33.8835, 
+        lon2 = -80.0679,
+        resolutionSub = 20.0,
+        listLat1 = 33.8835,
+        listLon1 = -80.0679,
+        listLat2 = 33.8835,
+        listLon2 = -80.0679,
+        resolutionList = 20.0,
+        endPoint1Lat = 39.0000,
+        endPoint1Lon = -77.0000,
+        endPoint2Lat = 39.0000,
+        endPoint2Lon = -77.0000,
+        zipCodeList = "20910+25414",
+        listZipCodeList = "20910+25414",
+        citiesLevel = '12',
+        centerPointLat = 39.0000,
+        centerPointLon = -77.0000,
+        distanceLat = 50.0,
+        distanceLon = 50.0,
+        resolutionSquare = 20.0,
+        listCenterPointLat = 39.0000,
+        listCenterPointLon = -77.0000,
+        listDistanceLat = 50.0,
+        listDistanceLon = 50.0,
+        listResolutionSquare = 20.0,
+        sector = 'conus',      
+        gmlListLatLon = "38.99,-77.02 39.70,-104.80",
+        compType = "Between",
+        featureType= "Forecast_Gml2Point")
 }
 
-#' A List of NDFD Points for a Zipcode
-#'
-#' Returns the WGS84 latitude and longitude values for one or more zip codes
-#' (50 United States and Puerto Rico). The returned list of points is suitable
-#' for use in inputs listLatLon and gmlListLatLon.
-#'
-#' @export
-list_zipcodes <- function(
-   istZipCodeList = "20910+25414") {
-}
-
-#' Unsummarized Data for a List of Cities
+#' This function is used during development to create and save the data object
+#'  \code{ndfdXMLclient_basic}.
 #' 
-#' Returns DWML-encoded NDFD data for a predefined list of cities. The cities
-#' are grouped into a number of subsets to facilitate requesting data. You can
-#' view the cities in each group by clicking on the links in the table below.
-#'
-#' @export
-query_cityies <- function(
-   citiesLevel = '12',
-   product = "time-series",
-   begin = "2004-04-27T12:00",
-   end = "2004-04-30T12:00",
-   Unit = "m",
-   element = c('mint', 'max', 'temp')){
-   
+#' @return a named chacter vector of basic data elements for queries
+get_ndfdXMLclient_basic <- function(){
+    c("product", "begin", "end", "Unit")
 }
 
-# A List of NDFD Points for a List of Cities
-#'
-# Returns the WGS84 latitude and longitude values for a predefined list of 
-#'cities. The cities are grouped into a number of subsets to facilitate
-#' requesting data. You can view the cities in each group by clicking on the
-#' links in the table below. The returned list of pointsis suitable for input
-#' into NDFDgenLatLonList(), NDFDgenByDayLatLonList(), and GmlLatLonList()
-#' which will return NDFD data for those points.
-#'
-#' @export
-list_cities <- function(
-   citiesLevel = '12'
-   ){
+#' This function is used during development to create and save the data object
+#'  \code{ndfdXMLclient_groups}.
+#' 
+#' @return a named list of query elements for various query types
+get_ndfdXMLclient_groups <- function(){
+    list(
+        query_point = c(
+            "lat", 
+            "lon", 
+            ndfdXMLclient_basic),
+        query_multipoint = c(
+            "listlatlon",
+            ndfdXMLclient_basic),
+        query_subgrid = c(
+            "lat1",
+            "lon1",
+            "lat2",
+            "lon2",
+            "resolutionSub",
+            ndfdXMLclient_basic),
+        list_points_in_subgrid = c(
+            "listLat1",
+            "listLon1",
+            "listLat2",
+            "listLon2",
+            "resolutionList"),
+        query_line = c(
+            "endPoint1Lat",
+            "endPoint1Lon",
+            "endPoint2Lat",
+            "endPoint2Lon",
+            ndfdXMLclient_basic),
+        list_points_on_line = c(
+            "endPoint1Lat",
+            "endPoint1Lon",
+            "endPoint2Lat",
+            "endPoint2Lon"),
+        query_zipcodes = c(
+            "zipCodeList",
+            ndfdXMLclient_basic),
+        list_zipcodes = c(
+           "listZipCodeList"),
+        query_cities = c(
+            "citiesLevel",
+            ndfdXMLclient_basic),
+        list_cities = c(
+            "citiesLevel"),
+        query_centerpoint = c(
+            "centerPointLat",
+            "centerPointLon",  
+            "distanceLat",
+            "distanceLon",
+            "resolutionSquare",
+            ndfdXMLclient_basic),
+        list_centerpoint = c(
+            "listCenterPointLat",
+            "listCenterPointLon",  
+            "listDistanceLat",
+            "listDistanceLon",
+            "listResolutionSquare"),    
+        list_corners = c(
+            "sector"),
+        query_single_time = c(
+            "gmlListLatLon",
+            "compType",
+            "featureType",
+            ndfdXMLclient_basic[-1]))
 }
 
-# Unsummarized Data for a Subgrid Defined by a Center Point
+#' Constructs a query to list resources available
 #'
-#' Returns DWML-encoded NDFD data for a rectangle defined by a center point and
-#' distances in the latitudinal and longitudinal directions.
+#' Defaults are stored in \code{ndfdXMLclient_vars} and are accessed by 
+#'  the type of resources requested.  For instance the defaults for a 
+#'  \code{points_in_subgrid} are found in \code{ndfdXMLclient_groups} 
+#'  under \code{list_points_in_subgrid}
 #'
+#' @seealso \url{http://graphical.weather.gov/xml/rest.php#XML_contents}
 #' @export
-query_centerpoint <- function(
-   centerPointLat = 39.0000,
-   centerPointLon = -77.0000,
-   distanceLat = 50.0,
-   distanceLon = 50.0,
-   resolutionSquare = 20.0,
-   product = 'time-series',
-   begin = '', 
-   end = '',
-   Unit = 'm',
-   element = c('mint', 'max', 'temp')
-   ){
+#' @param what character - the type of query which defines the defaults.  Defaults
+#'  for each type of query are identified \code{ndfdXMLclient_vars} and 
+#'  \code{ndfdXMLclient_groups}
+#'  \itemize{
+#'      \item points_in_subgrid, A List of NDFD Points for a Subgrid
+#'      \item points_on_line, A List of NDFD Points for a Line
+#'      \item zipcodes, A List of NDFD Points for a Zipcode
+#'      \item cities, A List of NDFD Points for a List of Cities
+#'      \item centerpoint, A List of NDFD Points for a Subgrid Defined by a Center Point
+#'      \item corners, A List of NDFD Points for the Corners of an NDFD Grid
+#'  }
+#' @examples
+#' \dontrun{
+#' # default for points, and then with lon and elements specified
+#' list_this(what = "points_in_subgrid")
+#' query_this(what = "point_in_subgrid", lon = -69)
+#' # query by zipcode
+#' query_this(what = "zipcode", zipCodeList = "04096",element = c("dew", "temp", "snow"))
+#' }
+list_this <- function(what = "points_in_subgrid", ...){
+    w <- paste0('list_', tolower(what[1]))
+    items <- list(...)
+    defaults <- ndfdXMLclient_vars[ndfdXMLclient_groups[[w]]]
+    if (length(items) == 0){
+        items <- defaults 
+    } else {
+        ix <- names(defaults) %in% names(items)
+        iy <- !ix
+        if (any(iy)) items[names(defaults)[iy]] <- defaults[iy]
+    }
+    nm <- names(items)
+    items <- lapply(items, 
+        function(x) {
+            if (is.numeric(x)) x <- n2c(x)
+            x
+        })
+    build_query(items, element = NULL)
 }
 
-# A List of NDFD Points for a Subgrid Defined by a Center Point
+#' Construct a query using an optional preconfigured list of defaults.
 #'
-#' Returns the WGS84 latitude and longitude values for a rectangle defined by a
-#' center point and distances in the latitudinal and longitudinal directions.
-#' The returned list of points is suitable for use in inputs listLatLon and 
-#' gmlListLatLon. NOTE: The subgrid locations will only form a rectangle when 
-#' viewed in the NDFD projection applicable to the grid.
+#' Defaults are stored in \code{ndfdXMLclient_vars} and are accessed by 
+#'  the type of resources requested.  For instance the defaults for a 
+#'  \code{point} are found in \code{ndfdXMLclient_groups} under \code{query_point}
 #'
+#' @seealso \url{http://graphical.weather.gov/xml/rest.php#XML_contents}
 #' @export
-list_centerpoint <- function(
-   listCenterPointLat = 39.0000,
-   listCenterPointLon = -77.0000,
-   listDistanceLat = 50.0,
-   listDistanceLon = 50.0,
-   listResolutionSquare = 20.0
-   ){
+#' @param what character - the type of query which defines the defaults.  Defaults
+#'  for each type of query are identified \code{ndfdXMLclient_vars} and 
+#'  \code{ndfdXMLclient_groups}
+#'  \itemize{
+#'      \item point, Single Point Unsummarized Data
+#'      \item multipoint, Multiple Point Unsummarized Data
+#'      \item subgrid, Unsummarized Data for a Subgrid
+#'      \item line, Unsummarized Data for a Line
+#'      \item zipcodes, Unsummarized Data for One or More Zipcodes
+#'      \item cities, Unsummarized Data for a List of Cities
+#'      \item centerpoint, Unsummarized Data for a Subgrid Defined by a Center Point
+#'      \item single_time, Unsummarized Data for a Single Time Encoded in dwGML
+#'  }
+#' @param element a character vector or elements to retrieve.  See 
+#'   \url{http://graphical.weather.gov/xml/docs/elementInputNames.php}
+#' @param ... zero or more parameters that will add to or override the 
+#'  defaults listed in \code{ndfdXMLclient_vars}
+#' @return character of the query to pass to \code{get_query}
+#' @examples
+#' \dontrun{
+#' # default for point, and then with lon and elements specified
+#' query_this(what = "point")
+#' query_this(what = "point", lon = -69, element = c("dew", "temp", "snow"))
+#' # query by zipcode
+#' query_this(what = "zipcode", zipCodeList = "04096",element = c("dew", "temp", "snow"))
+#' }
+query_this <- function(what = 'point', element =  c('mint', 'maxt', 'temp'), ...){
+    w <- paste0('query_', tolower(what[1]))
+    items <- list(...)
+    defaults <- ndfdXMLclient_vars[ndfdXMLclient_groups[[w]]]
+    if (length(items) == 0){
+        items <- defaults 
+    } else {
+        ix <- names(defaults) %in% names(items)
+        iy <- !ix
+        if (any(iy)) items[names(defaults)[iy]] <- defaults[iy]
+    }
+    nm <- names(items)
+    if ('begin' %in% nm) items[['begin']] <- t2c(items[['begin']])
+    if ('end' %in% nm) items[['end']] <- t2c(items[['end']])
+    items <- lapply(items, 
+        function(x) {
+            if (is.numeric(x)) x <- n2c(x)
+            x
+        })
+    build_query(items, element = element)
 }
 
-# A List of NDFD Points for the Corners of an NDFD Grid
-#'
-# Returns the WGS84 latitude and longitude values for the corners of an NDFD
-#' grid as well as the resolution required to retrieve the entire grid and
-#' still stay under the maximum allowed point restriction.
-#'
-#' @export
-list_corners <- function(
-   sector = 'conus'){
-}
 
-#' Unsummarized Data for a Single Time Encoded in dwGML
-#'
-# Returns Digital Weather Geography Markup Language (dwGML) encoded NDFD data
-#' for a list of points at a single valid time.
-#'
-#' @param compType Comparison type. Can be IsEqual, Between, GreatThan, GreaterThanOrEqual, LessThan, or LessThanOrEqual. 
-#' @param featureType 
-#'    GML 2 Compliant Data Structure: Forecast_Gml2Point
-#'    GML 3 Compliant Data Structures: Forecast_GmlsfPoint, Forecast_GmlObs, NdfdMultiPointCoverage
-#'    KML 2 Compliant Data Structure: Ndfd_KmlPoint
-#'
-#' @export
-query_single_time <- function(
-   gmlListLatLon = "38.99,-77.02 39.70,-104.80",
-   compType = "Between",
-   featureType= "Forecast_Gml2Point", 
-   begin = '', 
-   end = '',
-   element = c('mint', 'max', 'temp')){
-}
 
 ###
 #  ndfdBrowserClientByDay.php Interface

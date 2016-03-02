@@ -1,9 +1,9 @@
-#' Convert numeric to character
+#' Convert numeric values to character
 #' 
 #' @export
-#' @param x the value to format to character is not
-#' @param fmt character format, by default '%0.4f'
-#' @return character representation
+#' @param x numeric or character value to format
+#' @param fmt character format
+#' @return character representation of input
 n2c <- function(x, fmt = '%0.4f'){
    if (is.numeric(x)){
       x <- sprintf(fmt, x)
@@ -11,11 +11,11 @@ n2c <- function(x, fmt = '%0.4f'){
    x
 }
 
-#' Format date-time info to "YYYY-mm-ddTHH:MM"
+#' Format date-time values into YYYY-mm-ddTHH:MM
 #'
-#' @param x POSIXct time
-#' @param fmt date format, by default "%Y-%m-%dT%H:%M"
-#' @return character time representation
+#' @param x POSIXct of character time
+#' @param fmt date format
+#' @return character time representation of input
 t2c <- function(x, fmt = "%Y-%m-%dT%H:%M"){
    if (inherits(x, 'POSIXct')){
       x <- format(x, format = fmt)

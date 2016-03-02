@@ -5,7 +5,7 @@
 #' The head section doesn't provide much dynamic info so we have only a 
 #' very simple behavior associated with it.  
 #'
-#' @include DWMLBase.R
+#' @include Base.R
 #' @export
 DWMLHeadRefClass <- setRefClass("DWMLHeadRefClass",
     

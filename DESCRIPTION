@@ -1,0 +1,27 @@
+Package: ndfd
+Title: A RESTful R interface to the NWS National Digital Forecast Database
+Maintainer: Ben Tupper <btupper@bigelow.org>
+Author: Ben Tupper <btupper@bigelow.org>
+URL: https://github.com/BigelowLab/ndfd
+Version: 0.1
+License: MIT + file LICENSE 
+Description: National Weather Service provides a RESTful API (http://
+    graphical.weather.gov/xml/rest.php) to access current weather conditions and
+    forcasts. ndfd package provides a convenient wrapper around that API.
+Depends:
+    R (>= 3.0)
+Imports:
+    httr,
+    XML
+Collate:
+    'Base.R'
+    'Data.R'
+    'Exception.R'
+    'Head.R'
+    'Top.R'
+    'NDFD.R'
+    'misc.R'
+    'ndfd-package.R'
+    'query.R'
+RoxygenNote: 5.0.1
+LazyData: true
