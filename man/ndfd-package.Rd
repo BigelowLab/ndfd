@@ -6,6 +6,9 @@
 \alias{ndfd-package}
 \title{ndfd-package}
 \description{
-A RESTful R interface to the NWS National Digital Forecast Database#' @seealso \url{http://graphical.weather.gov/xml/rest.php}
+A RESTful R interface to the NWS National Digital Forecast Database
+}
+\seealso{
+\url{http://graphical.weather.gov/xml/rest.php}
 }
 

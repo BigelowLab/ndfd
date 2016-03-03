@@ -8,9 +8,4 @@
 \description{
 A DWML class for for the lonLatList section
 }
-\section{Fields}{
-
-\describe{
-\item{\code{location}}{a data frame of location information}
-}}
 

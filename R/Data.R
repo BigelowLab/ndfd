@@ -14,7 +14,7 @@ DWMLDataRefClass <- setRefClass("DWMLDataRefClass",
         
     methods = list(
         init = function(){
-            .self$location <- .self$extract_location()
+            .self$location <- .self$get_location()
         },
         
         show = function(prefix = ''){
@@ -27,29 +27,38 @@ DWMLDataRefClass <- setRefClass("DWMLDataRefClass",
                 print(head(.self$location))
                 print(tail(.self$location))   
             }
-            tl <- .self$extract_time_layout()
+            tl <- .self$get_time_layout()
             if(length(tl) > 0){
                 cat(prefix, " timelayout(s): ", paste(names(tl), collapse = " "), "\n", sep = "")
             }  # has timelayout
-            pp <- .self$extract_parameters()
+            pp <- .self$get_parameters()
             if (length(pp) > 0){
                 cat(prefix, " parameter(s):\n", sep = "")
-                for (n in names(pp)){
-                    cat(prefix, " ", n, "\n", sep = "")
-                    ss <- parameter_to_string(pp[[n]])
+                nm <- names(pp)[[1]]
+                cat(prefix, " ", nm, "\n", sep = "")
+                ss <- parameter_to_string(pp[[nm]])
+                for (s in ss) cat(prefix, "   ", s, "\n", sep = "")
+                if (length(pp) > 1){
+                    n <- length(pp)
+                    cat(prefix, " ... \n", sep = "")
+                    nm <- names(pp)[[n]]
+                    cat(prefix, " ", nm, "\n", sep = "")
+                    ss <- parameter_to_string(pp[[nm]])
                     for (s in ss) cat(prefix, "   ", s, "\n", sep = "")
-                }
+                } 
+                    
+                
             }
         })
 )
 
 #' Extracts location information
 #'
-#' @name DWMLDataRefClass_extract_location
+#' @name DWMLDataRefClass_get_location
 #' @return data frame, possibly with zero rows
 NULL
 DWMLDataRefClass$methods(
-    extract_location = function(){
+    get_location = function(form = c("character", "numeric")[2]){
         loc <- .self$node[names(.self$node) %in% 'location']
         if (is.null(loc)) return(data.frame())
         
@@ -74,7 +83,14 @@ DWMLDataRefClass$methods(
         }
         
         x <- as.data.frame(do.call(rbind, x), stringsAsFactors = FALSE)
-        rownames(x) <- x[,'location_key']
+        if (tolower(form[1]) == 'numeric'){
+            ix <- c("latitude", "longitude") %in% colnames(x)
+            if (any(ix)){
+                x[,'latitude'] <- as.numeric(x[,'latitude'])
+                x[,'longitude'] <- as.numeric(x[,'longitude'])
+            }
+        }
+        rownames(x) <- NULL
         x
     })
     
@@ -100,11 +116,11 @@ DWMLDataRefClass$methods(
 #'   <end-valid-time>2016-03-03T08:00:00-05:00</end-valid-time>
 #' </time-layout>
 #'
-#' @name DWMLDataRefClass_extract_time_layout
+#' @name DWMLDataRefClass_get_time_layout
 #' @return a list of data.frames - one per layout-key
 NULL
 DWMLDataRefClass$methods(
-    extract_time_layout = function(form = c("POSIXct", "character")[1]){
+    get_time_layout = function(form = c("POSIXct", "character")[1]){
         tl <- .self$node[names(.self$node) %in% 'time-layout']
         if (is.null(tl)) return(list())
         xx <- lapply(tl,
@@ -156,11 +172,11 @@ DWMLDataRefClass$methods(
 #'  </temperature>
 #' </parameters>
 #'
-#' @name DWMLDataRefClass_time_layout
+#' @name DWMLDataRefClass_get_parameters
 #' @return a list of data.frames - one per appplicable-location
 NULL
 DWMLDataRefClass$methods(
-    extract_parameters = function(){
+    get_parameters = function(){
         P <- .self$node[names(.self$node) %in% 'parameters']
         if (is.null(P)) return(list())
         applicable_location <- sapply(P, 
@@ -168,7 +184,7 @@ DWMLDataRefClass$methods(
         
         pp <- lapply(P,
             function(x){
-                xx <- lapply(XML::xmlChildren(x), extract_one_parameter)
+                xx <- lapply(XML::xmlChildren(x), get_one_parameter)
                 names(xx) <- sapply(xx, "[[", 'name')
                 xx
             })
@@ -176,6 +192,53 @@ DWMLDataRefClass$methods(
         pp
     })            
         
+
+
+#' Retrieve the data by name
+#' 
+#' @name DWMLDataRefClass_get_data
+#' @param name character of the parameter to retrieve
+#' @param by character data can be assmbled by time or by location
+#' @return data.frame with zero or more rows
+NULL
+DWMLDataRefClass$methods(
+    get_data = function(name = NULL, by = c("location", "time")[1]){
+        
+        R <- data.frame()
+        PP <- .self$get_parameters()
+        
+        if (is.null(name)){
+            name <- names(PP[[1]])[[1]]
+        } else {
+            nm <- names(PP[[1]])
+            if (!(name[1] %in% nm)){
+                cat("name not one of the parameters", name[1], "\n")
+                return(R)
+            }
+        }
+
+        if (!is.null(name)){
+            x <- lapply(PP,
+                function(x, name = ''){
+                    x[[name]][['value']]
+                },
+                name = name[1])
+            if( tolower(by[1]) == 'time'){
+                xx <- do.call(cbind, x)
+                tl <- PP[[1]][[name[1]]][['time_layout']]
+                tt <- .self$get_time_layout()[[tl]]
+                R <- data.frame(tt, xx, stringsAsFactors = FALSE)
+            } else {
+                xx <- do.call(rbind, x)
+                colnames(xx) <- paste0('V', 1:ncol(xx))
+                R <- data.frame(.self$location, xx, stringsAsFactors = FALSE)            
+            }              
+        
+        }
+        rownames(R) <- NULL
+        R    
+    })
+
 
 ###########  methods above
 ###########  functions below
@@ -185,7 +248,7 @@ DWMLDataRefClass$methods(
 #' 
 #' @param x XML::xmlNode
 #' @return a list with at least 'name' and 'value'
-extract_one_parameter <- function(x){
+get_one_parameter <- function(x){
     a <- as.list(xml_atts(x))
     a[['name']] <- xml_value(x[['name']])
     names(a) <- gsub("-", "_", names(a))

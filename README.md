@@ -56,48 +56,40 @@ X
 
 ![multiple_points](https://github.com/BigelowLab/ndfd/blob/master/inst/images/multiple_points.png)
 
-##### Get the temperature at series of locations
+##### Get the temperature at series of locations by zip code
 
-There is a 200 point limit for this request, so we'll try down the number of points by increasing the value of resolutionList from the default (5km) to 75km.
-
-```R
-my_query <- list_this(what = "points_in_subgrid",  listLon1 = -72, listLon2 = -63, listLat1 = 39, listLat2 = 46, resolutionList = 75)
-X <- NDFD(my_query)
-loc <- X$latLonList$extract_location(form = 'as_is')
-my_query <- query_this(what = 'multipoint', listLatLon = loc, element = 'temp')
-Y <- NDFD(my_query)
-
-
-
-
-##### Example - retrieve data by one or more zip codes
-
-
-```R
-library(ndfd)
-my_query <- query_this(what = "zipcodes", zipCodeList = "04096+04539")
-X <- NDFD(my_query)
-X
-# URI: http://graphical.weather.gov/xml/sample_products/browser_interface/ndfdXMLclient.php?zipCodeList=04096+04539&product=time-series&begin=&end=&Unit=m&mint=mint&maxt=maxt&temp=temp 
-# Reference Class: "NDFDRefClass"
-#   Reference Class: "DWMLHeadRefClass"
-#    Title: NOAA's National Weather Service Forecast Data
-#    Concise name: time-series
-#    Creation date: 2016-03-02T16:53:29Z
-#    Refresh frequency: PT1H
-#   Reference Class: "DWMLDataRefClass"
-#    locations:
-#        location_key latitude longitude
-# point1       point1    43.80    -70.20
-# point2       point2    43.96    -69.51
-#    timelayout(s):k-p24h-n7-1 k-p24h-n6-2 k-p3h-n35-3
-#    parameter(s):
-#    point1
-#     Daily Maximum Temperature, type = maximum, units = Celsius, time_layout = k-p24h-n7-1
-#     Daily Minimum Temperature, type = minimum, units = Celsius, time_layout = k-p24h-n6-2
-#     Temperature, type = hourly, units = Celsius, time_layout = k-p3h-n35-3
-#    point2
-#     Daily Maximum Temperature, type = maximum, units = Celsius, time_layout = k-p24h-n7-1
-#     Daily Minimum Temperature, type = minimum, units = Celsius, time_layout = k-p24h-n6-2
-#     Temperature, type = hourly, units = Celsius, time_layout = k-p3h-n35-3
+We retrieve the data associated with zip codes in Cumberland County, Maine.
 ```
+library(ndfd)
+zips <- "04003+04009+04011+04013+04107+04015+04017+04019+04021+04110+04024+04105+04032+04038+04039+04079+04040+04050+04055+04260+04057+04097+04066+04108+04101+04069+04071+04070+04029+04075+04077+04078+04106+04082+04084+04085+04091+04092+04062+04096"
+my_query <- query_this(what = 'zipcodes', zipCodeList = zips, element = 'temp')
+X <- NDFD(my_query)
+
+x <- X$data$get_data(name = 'Temperature', by = 'location')
+
+# each column 'Vn' is the parameter value at the time specified in the 
+# time-layout values.  
+head(x[1:5])
+# location_key latitude longitude  V1 V2
+#       point1    43.73    -70.00  -8 -6
+#       point2    44.07    -70.72 -10 -6
+#       point3    43.91    -69.97  -9 -7
+#       point4    43.80    -70.07  -9 -6
+#       point5    43.56    -70.20  -8 -6
+#       point6    44.01    -70.52 -11 -7
+
+y <- X$data$get_data(name = 'Temperature', by = 'time')
+
+# column 'pointN' is the parameter value at the listed time-layout window
+# in this case, 'Temperature' is valid only at the start times listed 
+# (once every three hours) 
+head(y[1:5])
+#    start_valid_time end_valid_time point1 point2 point3
+# 2016-03-03 10:00:00           <NA>     -8    -10     -9
+# 2016-03-03 13:00:00           <NA>     -6     -6     -7
+# 2016-03-03 16:00:00           <NA>     -7     -8     -8
+# 2016-03-03 19:00:00           <NA>     -8    -11    -11
+# 2016-03-03 22:00:00           <NA>     -9    -13    -12
+# 2016-03-04 01:00:00           <NA>     -9    -15    -12
+```
+

@@ -4,7 +4,8 @@
 #' @aliases ndfd
 #' @docType package
 #' @import methods httr XML
-#' @description A RESTful R interface to the NWS National Digital Forecast Database#' @seealso \url{http://graphical.weather.gov/xml/rest.php}
+#' @description A RESTful R interface to the NWS National Digital Forecast Database
+#' @seealso \url{http://graphical.weather.gov/xml/rest.php}
 NULL
 
 #' The basic query terms for most searches
