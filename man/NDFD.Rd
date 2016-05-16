@@ -2,7 +2,7 @@
 % Please edit documentation in R/NDFD.R
 \name{NDFD}
 \alias{NDFD}
-\title{Instantiate a NDFREfClass object}
+\title{Instantiate a NDFRefClass object}
 \usage{
 NDFD(query = NULL,
   baseuri = "http://graphical.weather.gov/xml/sample_products/browser_interface",
@@ -19,6 +19,6 @@ NDFD(query = NULL,
 NDFDRefClass object
 }
 \description{
-Instantiate a NDFREfClass object
+Instantiate a NDFRefClass object
 }
 

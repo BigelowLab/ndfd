@@ -1,5 +1,6 @@
 #' @field uri character
 #' @include Top.R
+#' @export
 NDFDRefClass <- setRefClass("NDFDRefClass",
 
     contains = "DWMLTopRefClass", 
@@ -29,7 +30,7 @@ NDFDRefClass <- setRefClass("NDFDRefClass",
         })
 )           
         
-#' Instantiate a NDFREfClass object
+#' Instantiate a NDFRefClass object
 #' 
 #' @export
 #' @param query character string

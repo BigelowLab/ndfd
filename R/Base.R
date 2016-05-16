@@ -19,11 +19,11 @@ DWMLBaseRefClass <- setRefClass("DWMLBaseRefClass",
             init()
         },
         
-        init = function() {},
-        
         show = function(prefix = ""){
             cat(prefix, "Reference Class: ", methods::classLabel(class(.self)), "\n", sep = "")
-        }
+        },
+        
+        init = function() {}
     )
                 
 )

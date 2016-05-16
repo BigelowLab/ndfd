@@ -3,7 +3,7 @@
 #' @include Base.R
 #' @export
 DWMLLatLonListRefClass <- setRefClass("DWMLLatLonListRefClass",
-    
+
     contains = 'DWMLBaseRefClass',
     
     methods = list(
@@ -30,13 +30,13 @@ DWMLLatLonListRefClass <- setRefClass("DWMLLatLonListRefClass",
 #'  a data query for multiple points
 #'
 #' @name DWMLLatLonListRefClass_get_location
-#' @param form character specifiction for as_is, character or numeric output
+#' @param form character specifiction for as_is, character or numeric output 
 #' @return character or data frame, possibly with zero rows
 NULL
 DWMLLatLonListRefClass$methods(
-    get_location = function(form = c("character", "numeric", "as_is")[2]){
+    get_location = function(form = c("character", "numeric", "query", "as_is")[2]){
         loc <- xml_value(.self$node)
-        if (form[1] == 'as_is') return(loc)
+        if (tolower(form[1]) == 'as_is') return(loc)
         if (is.null(loc)) return(data.frame())
         if (length(loc) == 0) return(data.frame())
         ss <- strsplit(loc, " ", fixed = TRUE)[[1]]

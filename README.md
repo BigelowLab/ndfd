@@ -19,7 +19,7 @@ You can use ndfd to both list available data lcoations as well as retrieve them.
 Each `NDFDRefClass` has 4 fields...
 
     + uri character, the complete URI with your query string
-    + version character, the repsonse version
+    + version character, the response version
     + head DWMLHeadRefClass an object to contain the header section (not always populated)
     + data DWMLDataRefClass an object to contain the data section (not always populated)
     + latLonList DWMLLonLatListRefClass  an object to contain the location listings (not always populated)
@@ -52,7 +52,21 @@ X
 # 2558 45.776558 -63.071170
 # 2559 45.900512 -63.028446
 # 2560 46.024344 -62.985609
+
+xy <- X$latLonList$get_location()
+str(xy)
+# 'data.frame':	1176 obs. of  2 variables:
+#  $ lat: num  43.1 43.2 43.3 43.4 43.6 ...
+#  $ lon: num  -72.1 -72 -72 -72 -72 ...
 ```
+
+We can get [forecast values](http://graphical.weather.gov/xml/docs/elementInputNames.php) by passing the above locations to a subsequent query.  ALternatively, we can pass a bounding box instead of each of the subgrid locations.
+
+```R
+
+my_query <- 
+
+
 
 ![multiple_points](https://github.com/BigelowLab/ndfd/blob/master/inst/images/multiple_points.png)
 
