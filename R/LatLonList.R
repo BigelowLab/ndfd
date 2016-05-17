@@ -34,7 +34,9 @@ DWMLLatLonListRefClass <- setRefClass("DWMLLatLonListRefClass",
 #' @return character or data frame, possibly with zero rows
 NULL
 DWMLLatLonListRefClass$methods(
-    get_location = function(form = c("character", "numeric", "query", "as_is")[2]){
+    get_location = function(
+        form = c("character", "numeric", "as_is")[2]
+        index = NA){
         loc <- xml_value(.self$node)
         if (tolower(form[1]) == 'as_is') return(loc)
         if (is.null(loc)) return(data.frame())

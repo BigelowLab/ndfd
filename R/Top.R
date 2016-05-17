@@ -36,16 +36,19 @@ DWMLTopRefClass <- setRefClass("DWMLTopRefClass",
         show = function(prefix = ""){
             callSuper(prefix = prefix)
             if (!is.null(.self$head)) {
+                cat(sprintf("[%s has head element ]", prefix),"\n")
                 .self$head$show(prefix = paste0(prefix, "  "))
             } else { 
                 cat(sprintf("[%s no head element ]", prefix),"\n") 
             }
             if (!is.null(.self$data)){
+                cat(sprintf("[%s has data element ]", prefix),"\n")
                 .self$data$show(prefix = paste0(prefix, "  "))
             } else {
                 cat(sprintf("[%s no data element ]", prefix), "\n")
             }
             if (!is.null(.self$latLonList)) {
+                cat(sprintf("[%s has latLonList element ]", prefix),"\n")
                 .self$latLonList$show(prefix = paste0(prefix, "  "))
             } else {
                 cat(sprintf("[%s no latLonList element ]", prefix), "\n")

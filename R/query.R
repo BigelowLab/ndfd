@@ -183,7 +183,7 @@ get_ndfdXMLclient_groups <- function(){
             "lat", 
             "lon", 
             ndfdXMLclient_basic),
-        query_multipoint = c(
+        query_multipoint = c(       # Number of points requested can not exceed 200.
             "listLatLon",
             ndfdXMLclient_basic),
         query_subgrid = c(

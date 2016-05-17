@@ -60,13 +60,60 @@ str(xy)
 #  $ lon: num  -72.1 -72 -72 -72 -72 ...
 ```
 
-We can get [forecast values](http://graphical.weather.gov/xml/docs/elementInputNames.php) by passing the above locations to a subsequent query.  ALternatively, we can pass a bounding box instead of each of the subgrid locations.
+We can get [forecast values](http://graphical.weather.gov/xml/docs/elementInputNames.php) by passing the above locations to a subsequent query.
 
 ```R
+# we can try to query like this, but it won't work if there are more than 200 points requested
+loc <- X$latLonList$get_location(form = 'as_is')
+my_query <- query_this(what = "multipoint", listLonLat = loc, element = 'temp', begin ='2016-05-14T12:00', end = '2016-05-16T12:00')
+X <- NDFD(my_query)
+# Error in curl::curl_fetch_memory(url, handle = handle) : 
+#  Server returned nothing (no headers, no data)
+```
 
-my_query <- 
+
+This limit could be an issue if a significant number of points are needed.  
 
 
+Alternatively, we can retrieve a subgrid of points by defining a bounding box.  We can request results at any resolution, but a coarse resolution is required if to avoid the 200 (within box) point cap.
+
+```
+my_query <- query_this(what = "subgrid",  lon1 = -72, lon2 = -63, lat1 = 39, lat2 = 46, product = 'time-series', element = 'temp', begin = '2016-05-14T12:00', end = '2016-05-17T12:00', resolutionSub = 75)
+X <- NDFD(my_query)
+X
+# Reference Class: "NDFDRefClass"
+# [ has head element ] 
+#   Reference Class: "DWMLHeadRefClass"
+#    Title: NOAA's National Weather Service Forecast Data
+#    Concise name: time-series
+#    Creation date: 2016-05-17T12:43:39Z
+#    Refresh frequency: PT1H
+# [ has data element ] 
+#   Reference Class: "DWMLDataRefClass"
+#    locations (head and tail):
+#   location_key latitude longitude
+# 1       point1    39.01    -71.99
+# 2       point2    39.62    -71.86
+# 3       point3    40.23    -71.72
+# 4       point4    40.83    -71.58
+# 5       point5    41.44    -71.44
+# 6       point6    42.04    -71.30
+#     location_key latitude longitude
+# 130     point130    43.45    -64.15
+# 131     point131    44.04    -63.96
+# 132     point132    44.62    -63.77
+# 133     point133    45.20    -63.58
+# 134     point134    45.78    -63.38
+# 135     point135    46.36    -63.18
+#    timelayout(s): k-p3h-n36-1 k-p3h-n36-2
+#    parameter(s):
+#    point1
+#      Temperature, type = hourly, units = Celsius, time_layout = k-p3h-n36-1
+#    ... 
+#    point135
+#      Temperature, type = hourly, units = Celsius, time_layout = k-p3h-n36-2
+# [ no latLonList element ] 
+```
 
 ![multiple_points](https://github.com/BigelowLab/ndfd/blob/master/inst/images/multiple_points.png)
 
