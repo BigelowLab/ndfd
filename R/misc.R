@@ -1,3 +1,21 @@
+
+#' Groups indices (1 to n) into groups of MAX size
+#'
+#' Useful when needing to get data in groups of 200 as per \url{http://graphical.weather.gov/xml/rest.php}
+#'
+#' @export
+#' @param index numeric vector of indicies to split into vectors of MAX length
+#' @param MAX numeric, the maximum number of elements per group returned
+#' @return list of index vectors of length MAX or shorter
+#' @examples
+#'  \dontrun{
+#'      str(split_indices(201:615))
+#'  }
+split_indices <- function(index, MAX = 200){
+    split(index, seq.int(0L, length(index)-1L) %/% MAX + 1)
+}
+
+
 #' Convert numeric values to character
 #' 
 #' @export
@@ -56,7 +74,8 @@ xmlString <- function(x){
 #' @return logical
 is_exception <- function(x, space = 'exc'){
    if (inherits(x, 'DWMLNodeRefClass')) x <- x$node
-   is_xmlNode(x) && ("exc" %in% names(XML::xmlNamespace(x)) )
+   is_xmlNode(x) && 
+    ("exc" %in% names(XML::xmlNamespace(x)) || "error" %in% xml_name(x))
 }
 
 #' Extract the value from a simple XML::xmlNode object
@@ -72,8 +91,16 @@ xml_value  <- function(x){
 #'
 #' @export
 #' @param x XML::xmlNode with attributes
-#' @param character vector of the attributes
+#' @return character vector of the attributes
 xml_atts  <- function(x){
     XML::xmlAttrs(x)
 }
 
+#' Extract the name of a simple XML::xmlNode object
+#'
+#' @export
+#' @param x XML::xmlNode
+#' @param character vector of the attributes
+xml_name <- function(x){
+    XML::xmlName(x)
+}

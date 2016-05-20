@@ -26,7 +26,7 @@ check_response <- function(rsp, encoding = "UTF-8"){
     
     x <- try(XML::xmlRoot(x))
     if (inherits(x, "try-error")){
-        x <- .create_exception(problem = "error parsing response content with xmlRoot")
+        x <- create_exception(problem = "error parsing response content with xmlRoot")
     }
     
     invisible(x)
@@ -44,7 +44,7 @@ parse_response <- function(r, form = c('DWMLTopRefClass', 'xml')[1], ...){
     
     x <- check_response(r, ...)
     
-    if (XML::xmlName(x) == "error"){
+    if (xml_name(x) == "error"){
     
         if (tolower(form[1]) == 'dwmltoprefclass') x <- DWMLExceptionRefClass$new(x)
         
@@ -240,6 +240,24 @@ get_ndfdXMLclient_groups <- function(){
             "compType",
             "featureType",
             ndfdXMLclient_basic[-1]))
+}
+
+
+
+#' Construct a NDFD uri possibly with a query
+#'
+#' @export
+#' @param query character string
+#' @param baseuri character the base URI
+#' @param interface the interface to use with the baseuri
+#' @return uri
+ndfd_uri <- function(query = NULL, 
+    baseuri = "http://graphical.weather.gov/xml/sample_products/browser_interface",
+    interface = c('ndfdXMLclient.php', 'ndfdBrowserClientByDay')[1]){
+    
+    uri <- file.path(baseuri[1], interface[1])
+    if (!is.null(query)) uri <- paste0(uri, "?", query[1])
+    return(uri) 
 }
 
 #' Constructs a query to list resources available

@@ -5,6 +5,8 @@
 \title{Extracts location information}
 \arguments{
 \item{form}{character specifiction for as_is, character or numeric output}
+
+\item{index}{numeric vector of indices to retrieve}
 }
 \value{
 character or data frame, possibly with zero rows

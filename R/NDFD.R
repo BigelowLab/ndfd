@@ -14,7 +14,7 @@ NDFDRefClass <- setRefClass("NDFDRefClass",
         initialize = function(x){
             if (is.character(x)){
                 .self$uri <- x[1]          
-                r <- httr::GET(x[1])
+                r <- httr::GET(.self$uri)
                 .self$node <- check_response(r)
                 .self$init()
             }
@@ -40,9 +40,8 @@ NDFDRefClass <- setRefClass("NDFDRefClass",
 NDFD <- function(query = NULL, 
     baseuri = "http://graphical.weather.gov/xml/sample_products/browser_interface",
     interface = c('ndfdXMLclient.php', 'ndfdBrowserClientByDay')[1]){
-            
-    uri <- file.path(baseuri[1], interface[1])
-    if (!is.null(query)) uri <- paste0(uri, "?", query[1]) 
+    
+    uri <- ndfd_uri(query = query, baseuri = baseuri, interface = interface)
             
     NDFDRefClass$new(uri)
 }      

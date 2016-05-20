@@ -14,27 +14,41 @@ DWMLTopRefClass <- setRefClass("DWMLTopRefClass",
     
     fields = list(
        version = 'character',
+       exception = 'ANY',
        head = 'ANY',
        data = 'ANY', 
        latLonList = 'ANY'),
    
     methods = list(
        init = function(){
-         atts <- xml_atts(.self$node)
-         if ("version" %in% names(atts)) .self$version <- atts[['version']]
+         .self$field('exception', NULL)
          .self$field('head', NULL)
          .self$field('data', NULL)
          .self$field('latLonList', NULL)
-         child_names <- names(.self$node)
-         if ('head' %in% child_names)
-             .self$field("head", DWMLHeadRefClass$new(.self$node[['head']]))
-         if ('data' %in% child_names) 
-             .self$field("data", DWMLDataRefClass$new(.self$node[['data']]))
-         if ('latLonList' %in% child_names)
-             .self$field('latLonList', DWMLLatLonListRefClass$new(.self$node[['latLonList']]))
+        
+         if (is_exception(.self$node)){
+            .self$field("exception", DWMLExceptionRefClass$new(.self$node))
+         } else {
+            atts <- xml_atts(.self$node)
+            if ("version" %in% names(atts)) .self$version <- atts[['version']]
+            
+            child_names <- names(.self$node)
+            if ('head' %in% child_names)
+                .self$field("head", DWMLHeadRefClass$new(.self$node[['head']]))
+            if ('data' %in% child_names) 
+                .self$field("data", DWMLDataRefClass$new(.self$node[['data']]))
+            if ('latLonList' %in% child_names)
+                .self$field('latLonList', DWMLLatLonListRefClass$new(.self$node[['latLonList']]))
+        }
         },
         show = function(prefix = ""){
             callSuper(prefix = prefix)
+            if (!is.null(.self$exception)){
+                 cat(sprintf("[%s has exception element ]", prefix),"\n")
+                .self$exception$show(prefix = paste0(prefix, "  "))
+            } else {
+                #cat(sprintf("[%s no exception element ]", prefix),"\n") 
+            }
             if (!is.null(.self$head)) {
                 cat(sprintf("[%s has head element ]", prefix),"\n")
                 .self$head$show(prefix = paste0(prefix, "  "))

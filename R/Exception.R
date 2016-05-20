@@ -10,12 +10,14 @@ DWMLExceptionRefClass <- setRefClass("DWMLExceptionRefClass",
     contains = 'DWMLBaseRefClass',
     
     methods = list(
-    
+        
         get_problem = function(default = 'unspecified'){
+            problem <- default
             if ('pre' %in% names(.self$node)){
                 if ('problem' %in% names(.self$node[['pre']])){
                    problem <- xml_value(.self$node[['pre']][['problem']])
                 }
+                
             } else {
                 problem <- default
             }
@@ -23,9 +25,9 @@ DWMLExceptionRefClass <- setRefClass("DWMLExceptionRefClass",
         },
         
         show = function(prefix = ""){
-            callSuper(profix = prefix)
+            callSuper(prefix = prefix)
             problem <- .self$get_problem()
-            cat(prefix, "  Problem: ", .problem, "\n", sep = "")
+            cat(prefix, "  Problem: ", problem, "\n", sep = "")
         })
 )
 

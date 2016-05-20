@@ -31,13 +31,24 @@ DWMLLatLonListRefClass <- setRefClass("DWMLLatLonListRefClass",
 #'
 #' @name DWMLLatLonListRefClass_get_location
 #' @param form character specifiction for as_is, character or numeric output 
+#' @param index numeric vector of indices to retrieve
 #' @return character or data frame, possibly with zero rows
 NULL
 DWMLLatLonListRefClass$methods(
     get_location = function(
-        form = c("character", "numeric", "as_is")[2]
-        index = NA){
-        loc <- xml_value(.self$node)
+        form = c("character", "numeric", "as_is")[2],
+        index = NA, ...){
+        
+        # if an index is provided then we call this method first
+        # to get a data.frame of character
+        if (!is.na(index[1])) {
+            ll <- as.matrix(.self$get_location(form = 'character')[index,])
+            loc <- paste(
+                apply(ll, 1, paste0, collapse = ","),
+                collapse = " ")
+        } else {
+            loc <- xml_value(.self$node)
+        }
         if (tolower(form[1]) == 'as_is') return(loc)
         if (is.null(loc)) return(data.frame())
         if (length(loc) == 0) return(data.frame())
