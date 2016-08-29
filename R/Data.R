@@ -117,37 +117,17 @@ DWMLDataRefClass$methods(
 #' </time-layout>
 #'
 #' @name DWMLDataRefClass_get_time_layout
+#' @param key NULL or character, specifies which time-layout by key.  If NULL
+#'  then all are returned.
+#' @param form character specifies time-object type to return
 #' @return a list of data.frames - one per layout-key
 NULL
 DWMLDataRefClass$methods(
-    get_time_layout = function(form = c("POSIXct", "character")[1]){
-        tl <- .self$node[names(.self$node) %in% 'time-layout']
-        if (is.null(tl)) return(list())
-        xx <- lapply(tl,
-            function(x, as_posixct = TRUE){
-                starts <- sapply(x[names(x) %in% 'start-valid-time'], function(x) xml_value(x))
-                iend <- names(x) %in% 'end-valid-time'
-                if (any(iend)){
-                    ends <- sapply(x[iend], function(x) xml_value(x))
-                } else {
-                    ends <- rep(NA, length(starts))
-                }   
-                if (as_posixct){
-                    starts <- as.POSIXct(starts, format = "%Y-%m-%dT%H:%M:%S", tz = "UTC")
-                    ends <- as.POSIXct(ends, format = "%Y-%m-%dT%H:%M:%S", tz = "UTC")
-                }
-                x <- data.frame(start_valid_time = starts, 
-                    end_valid_time = ends, stringsAsFactors = FALSE)
-                
-            }, 
-            as_posixct = tolower(form[1]) == 'posixct')
-        names(xx) <- sapply(tl, function(x) xml_value(x[['layout-key']]))
-                    
-            
-        xx
+    get_time_layout = function(key = NULL, form = c("POSIXct", "character")[1]){
+        DWML_get_time_layout(.self, key=key, form=form)
     })
                         
-#' Extracts paramaters information
+#' Extracts parameters information
 #'
 #' The <time-layout> element {dw:time-layoutType } [+] contains the start and 
 #'  stop valid times and any associated period names for the data. Since 
@@ -192,6 +172,22 @@ DWMLDataRefClass$methods(
         pp
     })            
         
+#' Get data by time-layout
+#'
+#' @name DWMLDataRefClass_get_by_time
+#' @param key character string - pattern matched so if you have series named
+#'  k-p24h-n7-1, k-p24h-n7-2 and k-p24h-n7-3 then requesting
+#'  k-p24h-n7-3 will get the third, but k-p24h-n7 will get all in the series
+#' @return data frame
+NULL
+DWMLDataRefClass$methods(
+    get_data_by_time_key = function(key = 'k-p24h-n7'){
+        allkeys <- list_time_layout_keys(.self$node)
+        ix <- grepl(key, allkeys, fixed = TRUE)
+        
+        
+    
+    })
 
 
 #' Retrieve the data by name
@@ -258,18 +254,89 @@ get_one_parameter <- function(x){
         'wordedForecast' = sapply(x[names(x) %in% 'text'], xml_value),
         as.numeric(sapply(x[names(x) %in% 'value'], xml_value)) )
     a
-}
+} #get_one_parameter
 
 
 #' Cast a parameter to character (suitable for DWMLDataRefClass$show)
 #'
 #' @param x a list of one or more parameter lists
 #' @return character representation of the parameters
-parameter_to_string<- function(x){
+parameter_to_string <- function(x){
      sapply(x, 
         function(x){
             sprintf("%s, type = %s, units = %s, time_layout = %s", 
             x[['name']], x[['type']], x[['units']], x[['time_layout']])
         })
+} #parameter_to_string
+
+
+#' Retrieve a list of time layout keys for parameters
+#'
+#' @export
+#' @param x DWMLDataRefClass or XMLNode
+#' @return a named list of time-layout keys for parameters
+list_parameter_keys <- function(x){
+    if (inherits(x, 'DWMLBaseRefClass')){
+        node <- X$node
+    } else if (inherits(x, 'XMLAbstractNode')){
+        node <- x
+    } else {
+        stop('input must inherit from ndfd::DWMLBaseRefClass or XML::XMLAbstractNode')
+    }
+    pnodes <- node['parameters']
+    if (is.null(parameters)) return(NULL)  
 }
+
+#' Retrieve a list of the time-layout keys in a DWMLDataRefClass
+#' 
+#' @export
+#' @param x DWMLDataRefClass or XMLNode
+#' @return character vector or NULL
+list_time_layout_keys <- function(x){
+    if (inherits(x, 'DWMLBaseRefClass')){
+        node <- X$node
+    } else if (inherits(x, 'XMLAbstractNode')){
+        node <- x
+    } else {
+        stop('input must inherit from ndfd::DWMLBaseRefClass or XML::XMLAbstractNode')
+    }
     
+    tlnodes <- node['time-layout']
+    if (is.null(tlnodes)) return(NULL)
+    
+    sapply(tlnodes, function(x) {
+        key <- x[['layout-key']]
+        if (!is.null(key)) ndfd::xml_value(key) else NULL
+        })
+} #list_time_layout_keys
+
+DWML_get_time_layout <- function(self, key = NULL, 
+    form = c("POSIXct", "character")[1]){
+        if (!is.null(key)){
+            allkeys <- list_time_layout_keys(self$node)
+            ix <- key %in% allkeys
+        }            
+        tl <- self$node[names(self$node) %in% 'time-layout']
+        if (is.null(tl)) return(list())
+        xx <- lapply(tl[ix],
+            function(x, as_posixct = TRUE){
+                starts <- sapply(x[names(x) %in% 'start-valid-time'], function(x) xml_value(x))
+                iend <- names(x) %in% 'end-valid-time'
+                if (any(iend)){
+                    ends <- sapply(x[iend], function(x) xml_value(x))
+                } else {
+                    ends <- rep(NA, length(starts))
+                }   
+                if (as_posixct){
+                    starts <- as.POSIXct(starts, format = "%Y-%m-%dT%H:%M:%S", tz = "UTC")
+                    ends <- as.POSIXct(ends, format = "%Y-%m-%dT%H:%M:%S", tz = "UTC")
+                }
+                x <- data.frame(start_valid_time = starts, 
+                    end_valid_time = ends, stringsAsFactors = FALSE)
+                
+            }, 
+            as_posixct = tolower(form[1]) == 'posixct')
+        names(xx) <- sapply(tl, function(x) xml_value(x[['layout-key']]))
+                    
+        xx
+    }
