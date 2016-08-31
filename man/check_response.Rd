@@ -12,7 +12,7 @@ check_response(rsp, encoding = "UTF-8")
 \item{encoding}{character, by defalt 'UTF-8'}
 }
 \value{
-\code{XML::xmlNode} object
+\code{xml} object
 }
 \description{
 Check an \code{httr::response} class object and possible pare to \code{XML::xmlNode}

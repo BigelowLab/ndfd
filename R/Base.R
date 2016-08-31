@@ -8,10 +8,10 @@ DWMLBaseRefClass <- setRefClass("DWMLBaseRefClass",
     methods = list(
         initialize = function(x){
             if (!missing(x)){
-                if (is_xmlNode(x)){
+                if (is_xml_node(x)){
                     .self$field("node", x)
                 } else {
-                    stop("input must be XML::XMLAbstractNode")
+                    stop("input must be xml2::xml_node")
                 }
             } else {
                 .self$field("node", NULL)

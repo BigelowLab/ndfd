@@ -2,7 +2,7 @@
 % Please edit documentation in R/Exception.R
 \name{create_exception}
 \alias{create_exception}
-\title{Create an exception XML::xmlNode}
+\title{Create an exception xml_node}
 \usage{
 create_exception(problem = "unspecified")
 }
@@ -10,9 +10,9 @@ create_exception(problem = "unspecified")
 \item{problem}{character, the problem statement}
 }
 \value{
-XML::xmlNode
+xml_node
 }
 \description{
-Create an exception XML::xmlNode
+Create an exception xml_node
 }
 

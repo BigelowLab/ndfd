@@ -34,21 +34,13 @@ DWMLDataRefClass <- setRefClass("DWMLDataRefClass",
             pp <- .self$get_parameters()
             if (length(pp) > 0){
                 cat(prefix, " parameter(s):\n", sep = "")
-                nm <- names(pp)[[1]]
-                cat(prefix, " ", nm, "\n", sep = "")
-                ss <- parameter_to_string(pp[[nm]])
-                for (s in ss) cat(prefix, "   ", s, "\n", sep = "")
-                if (length(pp) > 1){
-                    n <- length(pp)
-                    cat(prefix, " ... \n", sep = "")
-                    nm <- names(pp)[[n]]
-                    cat(prefix, " ", nm, "\n", sep = "")
-                    ss <- parameter_to_string(pp[[nm]])
-                    for (s in ss) cat(prefix, "   ", s, "\n", sep = "")
-                } 
+                dummy <- lapply(pp, 
+                    function(p){
+                        ss <- parameter_to_string(p)
+                        for (s in ss) cat(prefix, "   ", s, "\n", sep = "")
+                    })
+            } 
                     
-                
-            }
         })
 )
 
@@ -59,23 +51,24 @@ DWMLDataRefClass <- setRefClass("DWMLDataRefClass",
 NULL
 DWMLDataRefClass$methods(
     get_location = function(form = c("character", "numeric")[2]){
-        loc <- .self$node[names(.self$node) %in% 'location']
-        if (is.null(loc)) return(data.frame())
+        loc <- xml2::xml_find_all(.self$node, 'location')
+        if (length(loc) == 0) return(data.frame())
         
-        is_point <- !is.null(loc[[1]][['point']])
-        is_city <- !is.null(loc[[1]][['city']])
+        is_point <- !inherits(xml2::xml_find_first(loc[[1]], "point"), 'xml_missing')
+        is_city <- !inherits(xml2::xml_find_first(loc[[1]], "c"), 'xml_missing')
         if (is_point){
             x <- lapply(loc,
                 function(x){
-                    c(location_key = xml_value(x[['location-key']]),
-                        xml_atts(x[['point']]) )
+                    c(location_key = xml2::xml_text(xml2::xml_find_first(x, 'location-key')),
+                        xml2::xml_attrs(xml2::xml_find_first(x, "point")) )
+
                 })
         } else if (is_city) {
             x <- lapply(loc,
                 function(x){
-                    c(location_key = xml_value(x[['location-key']]),
-                        city = xml_value(x[['city']]),
-                        xml_atts(x[['city']]) )
+                    c(location_key = xml2::xml_text(xml2::xml_find_first(x, 'location-key')),
+                        city = xml2::xml_text(xml2::xml_find_first(x, 'city')),
+                        xml2::xml_attrs(xml2::xml_find_first('city')))
                 })
         } else {
             warning("location type not known")
@@ -157,15 +150,19 @@ DWMLDataRefClass$methods(
 NULL
 DWMLDataRefClass$methods(
     get_parameters = function(){
-        P <- .self$node[names(.self$node) %in% 'parameters']
-        if (is.null(P)) return(list())
+        P <- xml2::xml_find_all(.self$node, 'parameters')
+        #P <- .self$node[names(.self$node) %in% 'parameters']
+        if (length(P) == 0) return(list())
         applicable_location <- sapply(P, 
-            function(x) { xml_atts(x)[['applicable-location']] } )
+            function(x) {
+                xml2::xml_attrs(x)
+                #xml_atts(x)[['applicable-location']] 
+            } )
         
         pp <- lapply(P,
             function(x){
-                xx <- lapply(XML::xmlChildren(x), get_one_parameter)
-                names(xx) <- sapply(xx, "[[", 'name')
+                xx <- lapply(xml2::xml_children(x), get_one_parameter)
+                names(xx) <- sapply(xx,'[[', 'name')
                 xx
             })
         names(pp) <- applicable_location
@@ -240,19 +237,24 @@ DWMLDataRefClass$methods(
 ###########  functions below
 
 
-#' Extract one parameter from an XML::xmlNode
+#' Extract one parameter from an xml_node
 #' 
-#' @param x XML::xmlNode
+#' @param x xml_node
 #' @return a list with at least 'name' and 'value'
 get_one_parameter <- function(x){
-    a <- as.list(xml_atts(x))
-    a[['name']] <- xml_value(x[['name']])
+    a <- as.list(xml2::xml_attrs(x))
+    a[['name']] <- xml2::xml_name(x)
     names(a) <- gsub("-", "_", names(a))
+    
     a[['value']] <- switch(a[['name']],
-        'weather' = sapply(x[names(x) %in% 'weather-conditions'], xml_value),
-        'conditions-icon' = sapply(x[names(x) %in% 'icon-link'], xml_value),
-        'wordedForecast' = sapply(x[names(x) %in% 'text'], xml_value),
-        as.numeric(sapply(x[names(x) %in% 'value'], xml_value)) )
+        'weather' = sapply(xml2::xml_find_all(x, "weather-conditions"), xml2::xml_text),
+        #'weather' = sapply(x[names(x) %in% 'weather-conditions'], xml2::xml_text),
+        'conditions_icon' = sapply(xml2::xml_find_all(x, 'icon-link'), xml2::xml_text),
+        #'conditions-icon' = sapply(x[names(x) %in% 'icon-link'], xml2::xml_text),
+        'wordedForecast' = sapply(xml2::xml_find_all(x,'text'), xml2::xml_txt),
+        #'wordedForecast' = sapply(x[names(x) %in% 'text'], xml2::xml_txt),
+        sapply(xml2::xml_find_all(x,'value'), xml2::xml_double))
+        #as.numeric(sapply(x[names(x) %in% 'value'], xml2::xml_double)) )
     a
 } #get_one_parameter
 
@@ -278,13 +280,13 @@ parameter_to_string <- function(x){
 list_parameter_keys <- function(x){
     if (inherits(x, 'DWMLBaseRefClass')){
         node <- X$node
-    } else if (inherits(x, 'XMLAbstractNode')){
+    } else if (inherits(x, 'xml_node')){
         node <- x
     } else {
-        stop('input must inherit from ndfd::DWMLBaseRefClass or XML::XMLAbstractNode')
+        stop('input must inherit from ndfd::DWMLBaseRefClass or xml2::xml_node')
     }
-    pnodes <- node['parameters']
-    if (is.null(parameters)) return(NULL)  
+    pnodes <- xml2::xml_find_all(node, 'parameters')
+    if (inherits(pnodes, "xml_missing")) return(NULL) else return(pnodes)
 }
 
 #' Retrieve a list of the time-layout keys in a DWMLDataRefClass
@@ -295,35 +297,45 @@ list_parameter_keys <- function(x){
 list_time_layout_keys <- function(x){
     if (inherits(x, 'DWMLBaseRefClass')){
         node <- X$node
-    } else if (inherits(x, 'XMLAbstractNode')){
+    } else if (inherits(x, 'xml_node')){
         node <- x
     } else {
-        stop('input must inherit from ndfd::DWMLBaseRefClass or XML::XMLAbstractNode')
+        stop('input must inherit from ndfd::DWMLBaseRefClass or xml_node')
     }
     
-    tlnodes <- node['time-layout']
-    if (is.null(tlnodes)) return(NULL)
+    tlnodes <- xml2::xml_find_all(node,'time-layout')
+    if (inherits(tlnodes, 'xml_missing')) return(NULL)
     
     sapply(tlnodes, function(x) {
-        key <- x[['layout-key']]
-        if (!is.null(key)) ndfd::xml_value(key) else NULL
+        key <- xml2::xml_find_first(x, 'layout-key')
+        if (!inherits(key, 'xml_missing')) xml2::xml_text(key) else NULL
         })
 } #list_time_layout_keys
 
-DWML_get_time_layout <- function(self, key = NULL, 
+#' Retrieve a list of time layout data frames
+#'
+#' @param obj the DWMLDataRefClass object
+#' @param key charcater vector of one or more time-layout-keys or NULL to get all
+#' @param form character the time format to retrieve
+#' @return a list of one or more data frames
+DWML_get_time_layout <- function(obj, key = NULL, 
     form = c("POSIXct", "character")[1]){
+        allkeys <- list_time_layout_keys(obj$node)
         if (!is.null(key)){
-            allkeys <- list_time_layout_keys(self$node)
             ix <- key %in% allkeys
-        }            
-        tl <- self$node[names(self$node) %in% 'time-layout']
-        if (is.null(tl)) return(list())
+        } else {
+            ix <- rep(TRUE, length(allkeys))
+        }
+        
+        tl <- xml2::xml_find_all(obj$node, 'time-layout')
+        #tl <- self$node[names(self$node) %in% 'time-layout']
+        if (length(tl) ==0) return(list())
         xx <- lapply(tl[ix],
             function(x, as_posixct = TRUE){
-                starts <- sapply(x[names(x) %in% 'start-valid-time'], function(x) xml_value(x))
-                iend <- names(x) %in% 'end-valid-time'
-                if (any(iend)){
-                    ends <- sapply(x[iend], function(x) xml_value(x))
+                starts <- sapply(xml2::xml_find_all(x,'start-valid-time') ,xml2::xml_text)
+                iend <- xml2::xml_find_all(x, "end-valid-time")
+                if (length(iend) > 0){
+                    ends <- sapply(iend, xml2::xml_text)
                 } else {
                     ends <- rep(NA, length(starts))
                 }   
@@ -336,7 +348,10 @@ DWML_get_time_layout <- function(self, key = NULL,
                 
             }, 
             as_posixct = tolower(form[1]) == 'posixct')
-        names(xx) <- sapply(tl, function(x) xml_value(x[['layout-key']]))
-                    
-        xx
-    }
+        
+        #names(xx) <- sapply(tl, function(x) 
+        #    xml2::xml_text(xml2::xml_find_first(x, 'layout-key')) )
+        names(xx) <- allkeys[ix]
+           
+        return(xx)
+    } #DWML_get_time_layout

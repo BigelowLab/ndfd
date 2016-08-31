@@ -2,16 +2,16 @@
 % Please edit documentation in R/misc.R
 \name{xml_name}
 \alias{xml_name}
-\title{Extract the name of a simple XML::xmlNode object}
+\title{Extract the name of a simple xml_node object}
 \usage{
 xml_name(x)
 }
 \arguments{
-\item{x}{XML::xmlNode}
+\item{x}{xml_node}
 
 \item{character}{vector of the attributes}
 }
 \description{
-Extract the name of a simple XML::xmlNode object
+Extract the name of a simple xml_node object
 }
 

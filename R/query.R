@@ -3,7 +3,7 @@
 #' @export
 #' @param rsp \code{httr::response} class object
 #' @param encoding character, by defalt 'UTF-8'
-#' @return \code{XML::xmlNode} object
+#' @return \code{xml} object
 check_response <- function(rsp, encoding = "UTF-8"){
     w <- httr::http_error(rsp)
     if (w) {
@@ -16,17 +16,15 @@ check_response <- function(rsp, encoding = "UTF-8"){
         x  <- create_exception(problem = "error extracting response content")
         return(invisible(x))
     }
-    x <- try(XML::xmlTreeParse(x, asText = TRUE, 
-        encoding = encoding, useInternalNodes = TRUE,
-        fullNamespaceInfo = TRUE))
+    x <- try(xml2::read_xml(x))
     if (inherits(x, "try-error")){
-        x <- create_exception(problem = "error with xmlTreeParse")
+        x <- create_exception(problem = "error with read_xml")
         return(invisible(x))
     }
     
-    x <- try(XML::xmlRoot(x))
+    x <- try(xml2::xml_root(x))
     if (inherits(x, "try-error")){
-        x <- create_exception(problem = "error parsing response content with xmlRoot")
+        x <- create_exception(problem = "error parsing response content with xml_root")
     }
     
     invisible(x)
@@ -44,7 +42,7 @@ parse_response <- function(r, form = c('DWMLTopRefClass', 'xml')[1], ...){
     
     x <- check_response(r, ...)
     
-    if (xml_name(x) == "error"){
+    if (xml2::xml_name(x) == "error"){
     
         if (tolower(form[1]) == 'dwmltoprefclass') x <- DWMLExceptionRefClass$new(x)
         

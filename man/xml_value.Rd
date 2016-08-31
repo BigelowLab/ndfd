@@ -2,16 +2,16 @@
 % Please edit documentation in R/misc.R
 \name{xml_value}
 \alias{xml_value}
-\title{Extract the value from a simple XML::xmlNode object}
+\title{Extract the value from a simple xml_node object}
 \usage{
 xml_value(x)
 }
 \arguments{
-\item{x}{XML::xmlNode with a value}
+\item{x}{xml_node with a value}
 
 \item{the}{value of the node}
 }
 \description{
-Extract the value from a simple XML::xmlNode object
+Extract the value from a simple xml_node object
 }
 

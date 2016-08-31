@@ -2,7 +2,7 @@
 % Please edit documentation in R/misc.R
 \name{is_exception}
 \alias{is_exception}
-\title{Test XML::xmlNode or NodeRefClass is an exception}
+\title{Test xml_node or NodeRefClass is an exception}
 \usage{
 is_exception(x, space = "exc")
 }
@@ -15,6 +15,6 @@ is_exception(x, space = "exc")
 logical
 }
 \description{
-Test XML::xmlNode or NodeRefClass is an exception
+Test xml_node or NodeRefClass is an exception
 }
 

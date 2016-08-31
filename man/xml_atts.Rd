@@ -2,17 +2,17 @@
 % Please edit documentation in R/misc.R
 \name{xml_atts}
 \alias{xml_atts}
-\title{Extract the attributes from a simple XML::xmlNode object}
+\title{Extract the attributes from a simple xml_node object}
 \usage{
 xml_atts(x)
 }
 \arguments{
-\item{x}{XML::xmlNode with attributes}
+\item{x}{xml_node with attributes}
 }
 \value{
 character vector of the attributes
 }
 \description{
-Extract the attributes from a simple XML::xmlNode object
+Extract the attributes from a simple xml_node object
 }
 

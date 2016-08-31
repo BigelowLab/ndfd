@@ -3,6 +3,12 @@
 \name{DWMLDataRefClass_get_time_layout}
 \alias{DWMLDataRefClass_get_time_layout}
 \title{Extracts time-layout information}
+\arguments{
+\item{key}{NULL or character, specifies which time-layout by key.  If NULL
+then all are returned.}
+
+\item{form}{character specifies time-object type to return}
+}
 \value{
 a list of data.frames - one per layout-key
 }

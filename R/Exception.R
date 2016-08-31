@@ -13,11 +13,9 @@ DWMLExceptionRefClass <- setRefClass("DWMLExceptionRefClass",
         
         get_problem = function(default = 'unspecified'){
             problem <- default
-            if ('pre' %in% names(.self$node)){
-                if ('problem' %in% names(.self$node[['pre']])){
-                   problem <- xml_value(.self$node[['pre']][['problem']])
-                }
-                
+            prob <- xml2::xml_find_first(.self$node, "pre/problem")
+            if (inherits(prob, xml2::xml_node)){
+                problem <- xml2::xml_text(prob)
             } else {
                 problem <- default
             }
@@ -31,18 +29,16 @@ DWMLExceptionRefClass <- setRefClass("DWMLExceptionRefClass",
         })
 )
 
-#' Create an exception XML::xmlNode
+#' Create an exception xml_node
 #'
 #' @export
 #' @param problem character, the problem statement
-#' @return XML::xmlNode
+#' @return xml_node
 create_exception <- function(problem = 'unspecified'){
 
-    XML::newXMLNode("error",
-        kids = list(
-            XML::newXMLNode("pre",
-                kids = list(XML::newXMLNode("problem", problem))
-            )
-        )
-    )
+    root <- xml2::xml_new_document() %>% xml2::xml_add_child("error")
+    xml2::xml_add_child(root, "pre") %>%
+        xml2::xml_add_child("problem", problem) %>%
+        invisible()
+    return(root)
 }

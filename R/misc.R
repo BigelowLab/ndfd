@@ -41,32 +41,33 @@ t2c <- function(x, fmt = "%Y-%m-%dT%H:%M"){
    x
 }
 
-#' Test if an object inherits from XML::XMLAbstractNode
+#' Test if an object inherits from xml2::xml_node
 #'
 #' @export
 #' @param x object to test
 #' @param classname character, the class name to test against, by default 'XMLAbstractNode'
 #' @return logical
-is_xmlNode <- function(x, classname = 'XMLAbstractNode'){
+is_xml_node <- function(x, classname = 'xml_node'){
    inherits(x, classname)
 }
 
-#' Convert XML::xmlNode to character
+#' Convert xml_node to character
 #' 
 #' @export
 #' @param x xmlNode or NodeRefClass
 #' @return character
-xmlString <- function(x){
-   if (inherits(x, 'NodeRefClass')){
-      r <- xmlString(x$node)
+xml_string <- function(x){
+   if (inherits(x, 'xml_node')){
+      #r <- gsub("\n","", xml2:xml_text(x))
+      r <- xml2:xml_text(x)
    } else {
-      r <- gsub("\n","", XML::toString.XMLNode(x))
+      r <- xml_string(x$node)
    }
    return(r)
 }
 
 
-#' Test XML::xmlNode or NodeRefClass is an exception
+#' Test xml_node or NodeRefClass is an exception
 #'
 #' @export
 #' @param node object to test
@@ -74,33 +75,33 @@ xmlString <- function(x){
 #' @return logical
 is_exception <- function(x, space = 'exc'){
    if (inherits(x, 'DWMLNodeRefClass')) x <- x$node
-   is_xmlNode(x) && 
-    ("exc" %in% names(XML::xmlNamespace(x)) || "error" %in% xml_name(x))
+   is_xml_node(x) && 
+    ("exc" %in% names(xml2::xml_ns(x)) || "error" %in% xml2::xml_name(x))
 }
 
-#' Extract the value from a simple XML::xmlNode object
+#' Extract the value from a simple xml_node object
 #'
 #' @export
-#' @param x XML::xmlNode with a value
+#' @param x xml_node with a value
 #' @param the value of the node
 xml_value  <- function(x){
-    XML::xmlValue(x)
+   xml2::xml_text(x)
 }
 
-#' Extract the attributes from a simple XML::xmlNode object
+#' Extract the attributes from a simple xml_node object
 #'
 #' @export
-#' @param x XML::xmlNode with attributes
+#' @param x xml_node with attributes
 #' @return character vector of the attributes
 xml_atts  <- function(x){
-    XML::xmlAttrs(x)
+    xml2::xml_attrs(x)
 }
 
-#' Extract the name of a simple XML::xmlNode object
+#' Extract the name of a simple xml_node object
 #'
 #' @export
-#' @param x XML::xmlNode
+#' @param x xml_node
 #' @param character vector of the attributes
 xml_name <- function(x){
-    XML::xmlName(x)
+    xml2::xml_name(x)
 }

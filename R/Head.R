@@ -14,16 +14,17 @@ DWMLHeadRefClass <- setRefClass("DWMLHeadRefClass",
     methods = list(
         show = function(prefix = ""){
             callSuper(prefix = prefix)
-            a <- xml_atts(.self$node[['product']])       
+            prod <- xml2::xml_find_first(.self$node, 'product')
+            a <- xml2::xml_attrs(prod)       
             srsName <- a[['srsName']]
             concise_name <- a[['concise-name']]
             operational_mode <- a[['operational-mode']]
-            title <- xml_value(.self$node[['product']][['title']])
-            field <- xml_value(.self$node[['product']][['field']])
-            category <- xml_value(.self$node[['product']][['category']])
+            title <- xml2::xml_text(xml2::xml_find_first(prod, 'title'))
+            field <- xml2::xml_text(xml2::xml_find_first(prod, 'field'))
+            category <- xml2::xml_text(xml2::xml_find_first(prod, 'category'))
             creation_date <- 
-                xml_value(.self$node[['product']][['creation-date']])
-            a <- xml_atts(.self$node[['product']][['creation-date']])
+                xml2::xml_text(xml2::xml_find_first(prod, 'creation-date'))
+            a <- xml2::xml_attrs(xml2::xml_find_first(prod, 'creation-date'))
             refresh_frequency = a[['refresh-frequency']]
 
             cat(prefix, " Title: ", title, "\n", sep = "")
@@ -41,7 +42,8 @@ DWMLHeadRefClass <- setRefClass("DWMLHeadRefClass",
 NULL 
 DWMLHeadRefClass$methods(
     concise_name = function(){
-        a <- xml_atts(.self$node[['product']])
+        prod <- xml2::xml_find_first(.self$node, 'product')
+        a <- xml2::xml_attrs(xml2::xml_find_first(prod,'product'))
         a[['concise-name']]
     })
 
@@ -53,7 +55,8 @@ DWMLHeadRefClass$methods(
 NULL 
 DWMLHeadRefClass$methods(
     creation_date = function(form = c("POSIXct", "character")[1]){
-        cd <- xml_value(.self$node[['product']][['creation-date']])
+        #cd <- xml_value(.self$node[['product']][['creation-date']])
+        cd <- xml2::xml_text(xml2::xml_find_first(.sefl$node, "product/creation-date"))
         switch(tolower(form[1]),
             'posixct' = as.POSIXct(cd, format = "%Y-%m-%dT%H:%M:%SZ", tz = "UTC"),
             cd)

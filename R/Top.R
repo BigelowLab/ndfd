@@ -29,16 +29,18 @@ DWMLTopRefClass <- setRefClass("DWMLTopRefClass",
          if (is_exception(.self$node)){
             .self$field("exception", DWMLExceptionRefClass$new(.self$node))
          } else {
-            atts <- xml_atts(.self$node)
+            atts <- xml2::xml_attrs(.self$node)
             if ("version" %in% names(atts)) .self$version <- atts[['version']]
             
-            child_names <- names(.self$node)
-            if ('head' %in% child_names)
-                .self$field("head", DWMLHeadRefClass$new(.self$node[['head']]))
-            if ('data' %in% child_names) 
-                .self$field("data", DWMLDataRefClass$new(.self$node[['data']]))
-            if ('latLonList' %in% child_names)
-                .self$field('latLonList', DWMLLatLonListRefClass$new(.self$node[['latLonList']]))
+            x <- xml2::xml_find_first(.self$node, 'head')
+            if (!inherits(x, 'xml_missing'))
+                .self$field("head", DWMLHeadRefClass$new(x))
+            x <- xml2::xml_find_first(.self$node, 'data')    
+            if (!inherits(x, "xml_missing")) 
+                .self$field("data", DWMLDataRefClass$new(x))
+            x <- xml2::xml_find_first(.self$node, 'latLonList')
+            if (!inherits(x, 'xml_missing'))
+                .self$field('latLonList', DWMLLatLonListRefClass$new(x))
         }
         },
         show = function(prefix = ""){

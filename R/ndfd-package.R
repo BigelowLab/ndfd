@@ -3,7 +3,8 @@
 #' @name ndfd-package
 #' @aliases ndfd
 #' @docType package
-#' @import methods httr XML
+#' @import methods httr xml2
+#" @importFrom magrittr %>%
 #' @description A RESTful R interface to the NWS National Digital Forecast Database
 #' @seealso \url{http://graphical.weather.gov/xml/rest.php}
 NULL

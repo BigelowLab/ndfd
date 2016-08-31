@@ -47,7 +47,7 @@ DWMLLatLonListRefClass$methods(
                 apply(ll, 1, paste0, collapse = ","),
                 collapse = " ")
         } else {
-            loc <- xml_value(.self$node)
+            loc <- xml2::xml_text(.self$node)
         }
         if (tolower(form[1]) == 'as_is') return(loc)
         if (is.null(loc)) return(data.frame())
