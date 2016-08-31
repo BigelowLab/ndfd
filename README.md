@@ -4,7 +4,7 @@ A RESTful R client interface to the NWS [National Digital Forecast Database](htt
 ## Requirements
 + [R 3.2](https://www.r-project.org/)
 + [httr](https://cran.r-project.org/web/packages/httr/index.html) package
-+ [XML](https://cran.r-project.org/web/packages/XML/index.html)
++ [xml2](https://cran.r-project.org/web/packages/xml2/index.html)
 
 ## Installation
 ```R
