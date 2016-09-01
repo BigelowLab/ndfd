@@ -14,7 +14,7 @@ DWMLExceptionRefClass <- setRefClass("DWMLExceptionRefClass",
         get_problem = function(default = 'unspecified'){
             problem <- default
             prob <- xml2::xml_find_first(.self$node, "pre/problem")
-            if (inherits(prob, xml2::xml_node)){
+            if (inherits(prob, 'xml_node')){
                 problem <- xml2::xml_text(prob)
             } else {
                 problem <- default

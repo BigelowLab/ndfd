@@ -117,6 +117,37 @@ build_query_element <- function(x = c('mint', 'max', 'temp')){
 #  ndfdXMLclient.php Interface
 ####
 
+#' Undocumented query parameter (as far as I can tell) '?whichClient=xyz'
+#' 
+#' @export
+#' @param w if not NA then retirve the client by this name, if NA return ALL
+#' @return a named character vector of client names or just one
+which_client <- function(w = 'query_point'){
+
+    wc <- c(
+        query_point = 'NDFDgen',
+        query_multipoint = 'NDFDgenLatLonList',
+        query_subgrid =  'NDFDgenSubgrid',
+        list_points_in_subgrid =  'LatLonListSubgrid',
+        query_line =  'NDFDgenLine',
+        list_points_on_line =  'LatLonListLine',
+        query_zipcodes = 'NDFDgenMultiZipCode',
+        list_zipcodes =  'LatLonListZipCode',
+        query_cities =  'NDFDgenMultiCities',
+        list_cities =  'LatLonListCities',
+        query_centerpoint =  'NDFDgenSquare',
+        list_centerpoint =  'LatLonListSquare',
+        list_corners = 'CornerPoints',
+        query_single_time = "")
+    
+    if(!is.na(w[1])){
+        ix <- names(wc) %in% w[1]
+        wc <- if (!any(ix)) "" else unname(wc[ix])
+    }
+    wc
+}
+
+    
 #' This function is used during development to create and save the data object
 #'  \code{ndfdXMLclient_vars}.
 #' 
@@ -129,7 +160,7 @@ get_ndfdXMLclient_vars <- function(){
         begin = '', end = '',
         Unit = 'm',
         element = c('mint', 'maxt', 'temp'),
-        listlatlon = '38.99,-77.02 39.70,-104.80', 
+        listLatLon = '38.99,-77.02 39.70,-104.80', 
         lat1 = 33.8835, 
         lon1 = -80.0679, 
         lat2 = 33.8835, 
@@ -289,10 +320,14 @@ ndfd_uri <- function(query = NULL,
 list_this <- function(what = "points_in_subgrid", ...){
     w <- paste0('list_', tolower(what[1]))
     items <- list(...)
+    wc <- which_client(w)
+    #wc <- ""
+    if (nchar(wc) > 0) items[['whichClient']] <- unname(wc)
     defaults <- ndfdXMLclient_vars[ndfdXMLclient_groups[[w]]]
     if (length(items) == 0){
-        items <- defaults 
+        items <- if (nchar(wc)> 0) c(list(whichClient = unname(wc)), defaults) else defaults
     } else {
+        if (nchar(wc) > 0) items <- c(list(whichClient=unname(wc)), items)
         ix <- names(defaults) %in% names(items)
         iy <- !ix
         if (any(iy)) items[names(defaults)[iy]] <- defaults[iy]
@@ -342,11 +377,14 @@ list_this <- function(what = "points_in_subgrid", ...){
 #' }
 query_this <- function(what = 'point', element =  c('mint', 'maxt', 'temp'), ...){
     w <- paste0('query_', tolower(what[1]))
+    wc <- which_client(w)
+    #wc <- ""
     items <- list(...)
     defaults <- ndfdXMLclient_vars[ndfdXMLclient_groups[[w]]]
     if (length(items) == 0){
-        items <- defaults 
+        items <- if (nchar(wc) > 0) c(list(whichClient = unname(wc)), defaults) else defaults
     } else {
+        if (nchar(wc) > 0) items <- c(list(whichClient=unname(wc)), items)
         ix <- names(defaults) %in% names(items)
         iy <- !ix
         if (any(iy)) items[names(defaults)[iy]] <- defaults[iy]
