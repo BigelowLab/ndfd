@@ -95,6 +95,8 @@ get_query <- function(query,
 #' }
 build_query <- function(x, elements = NULL){
    if (is.list(x)) x <- unlist(x) 
+   ix <- names(x) %in% c('listLatLon', 'gmlListLatLon')
+   if (any(ix)) x[ix] <- xml2::url_escape(x[ix])
    r <- paste(paste0(names(x),"=",x), collapse = '&')
    if (!is.null(elements)) r <- paste(r, build_query_element(elements), sep = "&")
    r
