@@ -16,6 +16,16 @@ split_indices <- function(index, MAX = 200){
 }
 
 
+#' Convert location pairs into characters suitable for 'listLatLon' 
+#'  and 'gmlListLatLon'
+#'
+#' @export
+#' @param xy matrix of [n,2] dims ([lat, lon] order)
+#' @return character in the form 'lat1,lon1 lat2,lon2 lat3,lon3 ...' 
+paste_listLatLon <- function(xy){
+    s <- paste(apply(xy, 1, paste, collapse = ","), collapse = " ")
+}
+
 #' Convert numeric values to character
 #' 
 #' @export

@@ -2,7 +2,9 @@
 % Please edit documentation in R/Data.R
 \name{DWMLDataRefClass_get_parameters}
 \alias{DWMLDataRefClass_get_parameters}
-\title{Extracts parameters information}
+\title{List the parameters
+                 
+Extracts parameters information}
 \value{
 a list of data.frames - one per appplicable-location
 }

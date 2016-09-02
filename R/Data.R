@@ -9,37 +9,40 @@ DWMLDataRefClass <- setRefClass("DWMLDataRefClass",
     contains = 'DWMLBaseRefClass',
     
     fields = list(
-        location = 'data.frame',
-        data = 'list'),
+        location = 'data.frame', # data.frame
+        time_layout = "list",  # list of data.frames
+        data_list = 'list'),   # list of character vectors
         
     methods = list(
         init = function(){
             .self$location <- .self$get_location()
+            .self$time_layout <- .self$get_time_layout()
+            .self$data_list <- .self$list_parameters()
         },
         
         show = function(prefix = ''){
             callSuper(prefix = prefix)
-            if (nrow(.self$location) <= 12){
-                cat(prefix, " locations:\n", sep = "")
+            nloc <- nrow(.self$location)
+            if (nloc <= 12){
+                cat(prefix, "locations: ",nloc, "\n", sep = "")
                 print(.self$location)
             } else {
-                cat(prefix, " locations (head and tail):\n", sep = "")
+                cat(prefix, "locations (head and tail): ", nloc, "\n", sep = "")
                 print(head(.self$location))
                 print(tail(.self$location))   
             }
-            tl <- .self$get_time_layout()
-            if(length(tl) > 0){
-                cat(prefix, " timelayout(s): ", paste(names(tl), collapse = " "), "\n", sep = "")
+            tl <- names(.self$time_layout)
+            if(nchar(tl[1]) > 0){
+                cat(prefix, "timelayout(s): ",paste(tl, collapse = " "), "\n")
+                
             }  # has timelayout
-            pp <- .self$get_parameters()
-            if (length(pp) > 0){
-                cat(prefix, " parameter(s):\n", sep = "")
-                dummy <- lapply(pp, 
-                    function(p){
-                        ss <- parameter_to_string(p)
-                        for (s in ss) cat(prefix, "   ", s, "\n", sep = "")
-                    })
-            } 
+            
+            if (length(.self$data_list) > 0){
+                cat(prefix, "parameter(s): ", 
+                    length(.self$data_list), "\n", sep = "")
+                ss <- parameter_to_string(.self$data_list)
+                for (s in ss) cat(prefix, prefix, s, "\n", sep = "")
+            }  # has parameters
                     
         })
 )
@@ -86,7 +89,57 @@ DWMLDataRefClass$methods(
         rownames(x) <- NULL
         x
     })
-    
+
+
+#' Retrieves the common start times across all time-layouts
+#'
+#' @name DWMLDataRefClass_common_starts
+#' @return a named vector of POSIXct or possibly empty
+NULL
+DWMLDataRefClass$methods(
+    common_starts = function(key = names(.self$time_layout)){
+        s = do.call(c,sapply(.self$time_layout[key], function(x) x[,'start_valid_time']))
+        s[duplicated(s)]
+    })
+
+
+#' Retrieves a character vector of time-layout keys
+#' 
+#' @name DWMLDataRefClass_list_time_layout
+#' @return character vector - possibly empty
+NULL
+DWMLDataRefClass$methods(
+    list_time_layout = function(){
+        tl <- xml2::xml_find_all(.self$node, "time-layout/layout-key")
+        if (length(tl) == 0){
+            r = ""
+        } else {
+            r <- sapply(tl, xml2::xml_text)
+        }
+        r
+    })
+
+#' Retrieves a list of character vectors describing the parameters
+#' 
+#' @name DWMLDataRefClass_list_time_layout
+#' @return list of character vectors - possibly empty
+NULL
+DWMLDataRefClass$methods(
+    list_parameters = function(){
+            
+        r <- list()
+        p1 <- xml2::xml_find_first(.self$node, "parameters")
+        if (length(p1) > 0) {
+            r <- lapply(xml2::xml_children(p1),
+                function(p){
+                    c(  name = xml2::xml_name(p),
+                        xml2::xml_attrs(p))
+                    })
+            names(r) <- sapply(r, "[[", "name")
+        }
+
+        r
+    })
 #' Extracts time-layout information
 #'
 #' The <time-layout> element {dw:time-layoutType } [+] contains the start and 
@@ -119,7 +172,10 @@ DWMLDataRefClass$methods(
     get_time_layout = function(key = NULL, form = c("POSIXct", "character")[1]){
         DWML_get_time_layout(.self, key=key, form=form)
     })
-                        
+       
+       
+#' List the parameters
+#'                  
 #' Extracts parameters information
 #'
 #' The <time-layout> element {dw:time-layoutType } [+] contains the start and 
@@ -168,68 +224,66 @@ DWMLDataRefClass$methods(
         names(pp) <- applicable_location
         pp
     })            
-        
-#' Get data by time-layout
-#'
-#' @name DWMLDataRefClass_get_by_time
-#' @param key character string - pattern matched so if you have series named
-#'  k-p24h-n7-1, k-p24h-n7-2 and k-p24h-n7-3 then requesting
-#'  k-p24h-n7-3 will get the third, but k-p24h-n7 will get all in the series
-#' @return data frame
-NULL
-DWMLDataRefClass$methods(
-    get_data_by_time_key = function(key = 'k-p24h-n7'){
-        allkeys <- list_time_layout_keys(.self$node)
-        ix <- grepl(key, allkeys, fixed = TRUE)
-        
-        
-    
-    })
 
 
 #' Retrieve the data by name
 #' 
 #' @name DWMLDataRefClass_get_data
 #' @param name character of the parameter to retrieve
-#' @param by character data can be assmbled by time or by location
+#' @param key character the time-layout key to retrieve
 #' @return data.frame with zero or more rows
 NULL
 DWMLDataRefClass$methods(
-    get_data = function(name = NULL, by = c("location", "time")[1]){
-        
+    get_data = function(
+        name = .self$list_parameters()[[1]][['name']], 
+        key = names(.self$time_layout())[1]){
+            
         R <- data.frame()
-        PP <- .self$get_parameters()
         
-        if (is.null(name)){
-            name <- names(PP[[1]])[[1]]
-        } else {
-            nm <- names(PP[[1]])
-            if (!(name[1] %in% nm)){
-                cat("name not one of the parameters", name[1], "\n")
-                return(R)
-            }
+        # does the key fit?
+        if (key[1] != names(.self$time_layout)){
+            cat("key not found:", key[1], "\n")
+            return(R)
         }
-
-        if (!is.null(name)){
-            x <- lapply(PP,
-                function(x, name = ''){
-                    x[[name]][['value']]
-                },
-                name = name[1])
-            if( tolower(by[1]) == 'time'){
-                xx <- do.call(cbind, x)
-                tl <- PP[[1]][[name[1]]][['time_layout']]
-                tt <- .self$get_time_layout()[[tl]]
-                R <- data.frame(tt, xx, stringsAsFactors = FALSE)
-            } else {
-                xx <- do.call(rbind, x)
-                colnames(xx) <- paste0('V', 1:ncol(xx))
-                R <- data.frame(.self$location, xx, stringsAsFactors = FALSE)            
-            }              
         
+        # we look at the parameter list for the the first point
+        pnames <- sapply(.self$data_list, "[[", "name")
+        playout <-  sapply(.self$data_list, "[[", "time-layout")
+        ix <- pnames %in% name[1]
+        if (!any(ix)){
+            cat("parameter not found:", name[1], "\n")
+            return(R)
         }
-        rownames(R) <- NULL
-        R    
+        
+        iy <- playout %in% key[1]
+        if (!any(ix & iy)){
+            cat("key", key[1], "not matched for", name[1], "\n")
+            return(R)
+        }
+     
+        #iz <- which(ix & iy)
+        
+        points <- .self$node %>%
+            xml2::xml_find_all('parameters') %>%
+            xml2::xml_attr('applicable-location')
+            
+        tl <- .self$node %>%
+            xml2::xml_find_all(paste0('parameters/', name[1])) %>%
+            xml2::xml_attr('time-layout')
+        
+        ix <- tl %in% key[1]
+         
+        PP <- xml2::xml_find_all(.self$node, paste0('parameters/', name[1]))[ix]        
+        v <- do.call(cbind,
+            lapply(PP, 
+                function(P){
+                    P %>%
+                    xml2::xml_find_all("value") %>%
+                    xml2::xml_text()
+                }))
+        mode(v) <- 'numeric'
+        colnames(v) <- points
+        data.frame(.self$time_layout[[key[1]]], v, stringsAsFactors = FALSE)   
     })
 
 
@@ -244,17 +298,13 @@ DWMLDataRefClass$methods(
 get_one_parameter <- function(x){
     a <- as.list(xml2::xml_attrs(x))
     a[['name']] <- xml2::xml_name(x)
-    names(a) <- gsub("-", "_", names(a))
+    #names(a) <- gsub("-", "_", names(a))
     
     a[['value']] <- switch(a[['name']],
         'weather' = sapply(xml2::xml_find_all(x, "weather-conditions"), xml2::xml_text),
-        #'weather' = sapply(x[names(x) %in% 'weather-conditions'], xml2::xml_text),
-        'conditions_icon' = sapply(xml2::xml_find_all(x, 'icon-link'), xml2::xml_text),
-        #'conditions-icon' = sapply(x[names(x) %in% 'icon-link'], xml2::xml_text),
+        'conditions-icon' = sapply(xml2::xml_find_all(x, 'icon-link'), xml2::xml_text),
         'wordedForecast' = sapply(xml2::xml_find_all(x,'text'), xml2::xml_txt),
-        #'wordedForecast' = sapply(x[names(x) %in% 'text'], xml2::xml_txt),
         sapply(xml2::xml_find_all(x,'value'), xml2::xml_double))
-        #as.numeric(sapply(x[names(x) %in% 'value'], xml2::xml_double)) )
     a
 } #get_one_parameter
 
@@ -266,8 +316,8 @@ get_one_parameter <- function(x){
 parameter_to_string <- function(x){
      sapply(x, 
         function(x){
-            sprintf("%s, type = %s, units = %s, time_layout = %s", 
-            x[['name']], x[['type']], x[['units']], x[['time_layout']])
+            sprintf("%s, type = %s, units = %s, time-layout = %s", 
+            x[['name']], x[['type']], x[['units']], x[['time-layout']])
         })
 } #parameter_to_string
 

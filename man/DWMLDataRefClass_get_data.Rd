@@ -6,7 +6,7 @@
 \arguments{
 \item{name}{character of the parameter to retrieve}
 
-\item{by}{character data can be assmbled by time or by location}
+\item{key}{character the time-layout key to retrieve}
 }
 \value{
 data.frame with zero or more rows

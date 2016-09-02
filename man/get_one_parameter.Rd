@@ -11,9 +11,6 @@ get_one_parameter(x)
 }
 \value{
 a list with at least 'name' and 'value'
-weather' = sapply(x[names(x) %in% 'weather-conditions'], xml2::xml_text),
-conditions-icon' = sapply(x[names(x) %in% 'icon-link'], xml2::xml_text),
-wordedForecast' = sapply(x[names(x) %in% 'text'], xml2::xml_txt),
 }
 \description{
 Extract one parameter from an xml_node
