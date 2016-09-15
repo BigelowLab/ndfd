@@ -41,7 +41,7 @@ DWMLTopRefClass <- setRefClass("DWMLTopRefClass",
             x <- xml2::xml_find_first(.self$node, 'latLonList')
             if (!inherits(x, 'xml_missing'))
                 .self$field('latLonList', DWMLLatLonListRefClass$new(x))
-        }
+            }
         },
         show = function(prefix = ""){
             callSuper(prefix = prefix)
@@ -70,7 +70,54 @@ DWMLTopRefClass <- setRefClass("DWMLTopRefClass",
                 cat(sprintf("[%s no latLonList element ]", prefix), "\n")
             }
 
-        })
+        }) 
 )
+
+#' Get the location data if available
+#' 
+#' @name DWMLTopRefClass_get_location
+#' @param ... further arguments for DWMLDataRefClass$get_location()
+#' @return data frame or NULL
+NULL
+DWMLTopRefClass$methods(
+    get_location = function(...){
+        if (!is.null(.self$data)){
+            x <- .self$data$get_location(...)
+        } else {
+            x <- NULL
+        }
+        x
+    })
+    
+#' Get the time-layout if available
+#' 
+#' @name DWMLTopRefClass_get_time_layout
+#' @return list of data.frames or NULL
+NULL
+DWMLTopRefClass$methods(
+    get_time_layout = function(){
+        if (!is.null(.self$data)){
+            x <- .self$data$time_layout
+        } else {
+            x <- NULL
+        }
+        x
+    })
+
+#' Get data by name and time-layout key
+#' 
+#' @name DWMLTopRefClass_get_data
+#' @param ... arguments for DWMLDataRefClass$get_data()
+#' @return data.frame or NULL
+NULL
+DWMLTopRefClass$methods(
+    get_data = function(...){
+        if (!is.null(.self$data)){
+            x <- .self$data$get_data(...)
+        } else {
+            x <- NULL
+        }
+        x
+    })
 
        

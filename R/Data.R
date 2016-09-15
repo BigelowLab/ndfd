@@ -236,12 +236,12 @@ NULL
 DWMLDataRefClass$methods(
     get_data = function(
         name = .self$list_parameters()[[1]][['name']], 
-        key = names(.self$time_layout())[1]){
+        key = .self$list_parameters()[[1]][['time-layout']]){
             
         R <- data.frame()
         
         # does the key fit?
-        if (key[1] != names(.self$time_layout)){
+        if (!(key[1] %in% names(.self$time_layout))){
             cat("key not found:", key[1], "\n")
             return(R)
         }
