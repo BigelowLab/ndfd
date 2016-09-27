@@ -86,7 +86,7 @@ DWMLDataRefClass$methods(
                 x[,'longitude'] <- as.numeric(x[,'longitude'])
             }
         }
-        rownames(x) <- NULL
+        rownames(x) <- x[,'location_key']
         x
     })
 
@@ -260,20 +260,20 @@ DWMLDataRefClass$methods(
             cat("key", key[1], "not matched for", name[1], "\n")
             return(R)
         }
-     
-        #iz <- which(ix & iy)
-        
-        points <- .self$node %>%
-            xml2::xml_find_all('parameters') %>%
-            xml2::xml_attr('applicable-location')
-            
+      
         tl <- .self$node %>%
             xml2::xml_find_all(paste0('parameters/', name[1])) %>%
             xml2::xml_attr('time-layout')
         
         ix <- tl %in% key[1]
-         
-        PP <- xml2::xml_find_all(.self$node, paste0('parameters/', name[1]))[ix]        
+        
+        points <- xml2::xml_find_all(.self$node, 'parameters')[ix] %>%
+            xml2::xml_attr('applicable-location')
+        
+        loc <- .self$get_location()
+           
+        PP <- xml2::xml_find_all(.self$node, paste0('parameters/', name[1]))[ix]  
+              
         v <- do.call(cbind,
             lapply(PP, 
                 function(P){
@@ -282,6 +282,7 @@ DWMLDataRefClass$methods(
                     xml2::xml_text()
                 }))
         mode(v) <- 'numeric'
+                
         colnames(v) <- points
         data.frame(.self$time_layout[[key[1]]], v, stringsAsFactors = FALSE)   
     })
