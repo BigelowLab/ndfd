@@ -270,8 +270,6 @@ DWMLDataRefClass$methods(
         points <- xml2::xml_find_all(.self$node, 'parameters')[ix] %>%
             xml2::xml_attr('applicable-location')
         
-        loc <- .self$get_location()
-           
         PP <- xml2::xml_find_all(.self$node, paste0('parameters/', name[1]))[ix]  
               
         v <- do.call(cbind,
