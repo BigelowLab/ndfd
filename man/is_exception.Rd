@@ -7,9 +7,9 @@
 is_exception(x, space = "exc")
 }
 \arguments{
-\item{space}{the namespace to test}
+\item{x}{node object to test}
 
-\item{node}{object to test}
+\item{space}{the namespace to test}
 }
 \value{
 logical

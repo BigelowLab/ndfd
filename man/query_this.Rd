@@ -4,7 +4,7 @@
 \alias{query_this}
 \title{Construct a query using an optional preconfigured list of defaults.}
 \usage{
-query_this(what = "point", element = c("mint", "maxt", "temp"), ...)
+query_this(what = "point", elements = c("mint", "maxt", "temp"), ...)
 }
 \arguments{
 \item{what}{character - the type of query which defines the defaults.  Defaults
@@ -21,7 +21,7 @@ for each type of query are identified \code{ndfdXMLclient_vars} and
     \item single_time, Unsummarized Data for a Single Time Encoded in dwGML
 }}
 
-\item{element}{a character vector or elements to retrieve.  See 
+\item{elements}{a character vector or elements to retrieve.  See 
 \url{http://graphical.weather.gov/xml/docs/elementInputNames.php}}
 
 \item{...}{zero or more parameters that will add to or override the 
@@ -39,9 +39,9 @@ Defaults are stored in \code{ndfdXMLclient_vars} and are accessed by
 \dontrun{
 # default for point, and then with lon and elements specified
 query_this(what = "point")
-query_this(what = "point", lon = -69, element = c("dew", "temp", "snow"))
+query_this(what = "point", lon = -69, elements = c("dew", "temp", "snow"))
 # query by zipcode
-query_this(what = "zipcode", zipCodeList = "04096",element = c("dew", "temp", "snow"))
+query_this(what = "zipcode", zipCodeList = "04096",elements = c("dew", "temp", "snow"))
 }
 }
 \seealso{

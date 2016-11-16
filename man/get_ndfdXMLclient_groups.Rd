@@ -3,7 +3,7 @@
 \name{get_ndfdXMLclient_groups}
 \alias{get_ndfdXMLclient_groups}
 \title{This function is used during development to create and save the data object
- \code{ndfdXMLclient_groups}.}
+ ndfdXMLclient_groups.}
 \usage{
 get_ndfdXMLclient_groups()
 }
@@ -12,6 +12,6 @@ a named list of query elements for various query types
 }
 \description{
 This function is used during development to create and save the data object
- \code{ndfdXMLclient_groups}.
+ ndfdXMLclient_groups.
 }
 

@@ -8,8 +8,9 @@ xml_value(x)
 }
 \arguments{
 \item{x}{xml_node with a value}
-
-\item{the}{value of the node}
+}
+\value{
+the value of the node
 }
 \description{
 Extract the value from a simple xml_node object

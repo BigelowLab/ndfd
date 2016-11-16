@@ -7,7 +7,7 @@
 build_query_element(x = c("mint", "max", "temp"))
 }
 \arguments{
-\item{a}{character vector of element names}
+\item{x}{a character vector of element names}
 }
 \value{
 query character string

@@ -5,6 +5,8 @@
 #' @docType package
 #' @import methods httr xml2
 #' @importFrom magrittr %>%
+#' @importFrom methods new
+#' @importFrom xml2 xml_name
 #' @description A RESTful R interface to the NWS National Digital Forecast Database
 #' @seealso \url{http://graphical.weather.gov/xml/rest.php}
 NULL

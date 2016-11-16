@@ -302,7 +302,7 @@ get_one_parameter <- function(x){
     a[['value']] <- switch(a[['name']],
         'weather' = sapply(xml2::xml_find_all(x, "weather-conditions"), xml2::xml_text),
         'conditions-icon' = sapply(xml2::xml_find_all(x, 'icon-link'), xml2::xml_text),
-        'wordedForecast' = sapply(xml2::xml_find_all(x,'text'), xml2::xml_txt),
+        'wordedForecast' = sapply(xml2::xml_find_all(x,'text'), xml2::xml_text),
         sapply(xml2::xml_find_all(x,'value'), xml2::xml_double))
     a
 } #get_one_parameter
@@ -328,7 +328,7 @@ parameter_to_string <- function(x){
 #' @return a named list of time-layout keys for parameters
 list_parameter_keys <- function(x){
     if (inherits(x, 'DWMLBaseRefClass')){
-        node <- X$node
+        node <- x$node
     } else if (inherits(x, 'xml_node')){
         node <- x
     } else {
@@ -345,7 +345,7 @@ list_parameter_keys <- function(x){
 #' @return character vector or NULL
 list_time_layout_keys <- function(x){
     if (inherits(x, 'DWMLBaseRefClass')){
-        node <- X$node
+        node <- x$node
     } else if (inherits(x, 'xml_node')){
         node <- x
     } else {

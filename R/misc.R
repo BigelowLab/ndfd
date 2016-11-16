@@ -69,7 +69,7 @@ is_xml_node <- function(x, classname = 'xml_node'){
 xml_string <- function(x){
    if (inherits(x, 'xml_node')){
       #r <- gsub("\n","", xml2:xml_text(x))
-      r <- xml2:xml_text(x)
+      r <- xml2::xml_text(x)
    } else {
       r <- xml_string(x$node)
    }
@@ -80,7 +80,7 @@ xml_string <- function(x){
 #' Test xml_node or NodeRefClass is an exception
 #'
 #' @export
-#' @param node object to test
+#' @param x node object to test
 #' @param space the namespace to test
 #' @return logical
 is_exception <- function(x, space = 'exc'){
@@ -93,7 +93,7 @@ is_exception <- function(x, space = 'exc'){
 #'
 #' @export
 #' @param x xml_node with a value
-#' @param the value of the node
+#' @return the value of the node
 xml_value  <- function(x){
    xml2::xml_text(x)
 }
@@ -107,11 +107,11 @@ xml_atts  <- function(x){
     xml2::xml_attrs(x)
 }
 
-#' Extract the name of a simple xml_node object
-#'
-#' @export
-#' @param x xml_node
-#' @param character vector of the attributes
-xml_name <- function(x){
-    xml2::xml_name(x)
-}
+# #' Extract the name of a simple xml_node object
+# #'
+# #' @export
+# #' @param x xml_node
+# #' @return character vector of the attributes
+# xml_name <- function(x){
+#     xml2::xml_name(x)
+# }

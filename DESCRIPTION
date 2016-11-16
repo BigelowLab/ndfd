@@ -5,14 +5,14 @@ Author: Ben Tupper <btupper@bigelow.org>
 URL: https://github.com/BigelowLab/ndfd
 Version: 0.1
 License: MIT + file LICENSE
-Description: National Weather Service provides a RESTful API (http://
-    graphical.weather.gov/xml/rest.php) to access current weather conditions and
-    forcasts. ndfd package provides a convenient wrapper around that API.
+Description: National Weather Service provides a RESTful API to access current weather conditions and forcasts. ndfd package provides a convenient wrapper around that API.
 Depends:
     R (>= 3.0)
 Imports:
+    methods,
     httr,
-    xml2
+    xml2,
+    magrittr
 Collate:
     'Base.R'
     'Data.R'

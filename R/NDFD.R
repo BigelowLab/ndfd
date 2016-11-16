@@ -1,3 +1,5 @@
+#' A DWML generic use class
+#'
 #' @field uri character
 #' @include Top.R
 #' @export

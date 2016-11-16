@@ -3,7 +3,7 @@
 \name{get_ndfdXMLclient_vars}
 \alias{get_ndfdXMLclient_vars}
 \title{This function is used during development to create and save the data object
- \code{ndfdXMLclient_vars}.}
+ ndfdXMLclient_vars.}
 \usage{
 get_ndfdXMLclient_vars()
 }
@@ -12,6 +12,6 @@ a named list of default variable values
 }
 \description{
 This function is used during development to create and save the data object
- \code{ndfdXMLclient_vars}.
+ ndfdXMLclient_vars.
 }
 

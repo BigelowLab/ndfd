@@ -18,6 +18,11 @@ for each type of query are identified \code{ndfdXMLclient_vars} and
     \item centerpoint, A List of NDFD Points for a Subgrid Defined by a Center Point
     \item corners, A List of NDFD Points for the Corners of an NDFD Grid
 }}
+
+\item{...}{other keywords for listing in key=value form}
+}
+\value{
+a character query string
 }
 \description{
 Defaults are stored in \code{ndfdXMLclient_vars} and are accessed by 
@@ -29,9 +34,9 @@ Defaults are stored in \code{ndfdXMLclient_vars} and are accessed by
 \dontrun{
 # default for points, and then with lon and elements specified
 list_this(what = "points_in_subgrid")
-query_this(what = "point_in_subgrid", lon = -69)
-# query by zipcode
-query_this(what = "zipcode", zipCodeList = "04096",element = c("dew", "temp", "snow"))
+list_this(what = "point_in_subgrid", lon = -69)
+# list by zipcode
+list_this(what = "zipcode", zipCodeList = "04096",elements = c("dew", "temp", "snow"))
 }
 }
 \seealso{

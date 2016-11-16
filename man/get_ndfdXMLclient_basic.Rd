@@ -3,7 +3,7 @@
 \name{get_ndfdXMLclient_basic}
 \alias{get_ndfdXMLclient_basic}
 \title{This function is used during development to create and save the data object
- \code{ndfdXMLclient_basic}.}
+ ndfdXMLclient_basic.}
 \usage{
 get_ndfdXMLclient_basic()
 }
@@ -12,6 +12,6 @@ a named chacter vector of basic data elements for queries
 }
 \description{
 This function is used during development to create and save the data object
- \code{ndfdXMLclient_basic}.
+ ndfdXMLclient_basic.
 }
 
